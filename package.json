@@ -15,5 +15,14 @@
   "bugs": {
     "url": "https://github.com/leandroesposito/top-messaging-app-server/issues"
   },
-  "homepage": "https://github.com/leandroesposito/top-messaging-app-server#readme"
+  "homepage": "https://github.com/leandroesposito/top-messaging-app-server#readme",
+  "devDependencies": {
+    "prisma": "^7.2.0"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3"
+  }
 }
