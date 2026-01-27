@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS private_messages (
 
 CREATE TABLE IF NOT EXISTS groups (
   id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  invite_code TEXT UNIQUE,
   name TEXT,
   description TEXT
 );
