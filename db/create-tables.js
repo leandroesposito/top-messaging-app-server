@@ -9,9 +9,9 @@ DROP TABLE IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  username TEXT,
-  password TEXT,
-  friend_code TEXT,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  friend_code TEXT UNIQUE,
   is_online BOOLEAN DEFAULT false
 );
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS private_messages (
   id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   sender_user_id INT REFERENCES users (id) ON DELETE CASCADE,
   receiver_user_id INT REFERENCES users (id) ON DELETE CASCADE,
-  created_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL,
   body TEXT
 );
 
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS group_messages (
   id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   sender_user_id INT REFERENCES users (id) ON DELETE CASCADE,
   group_id INT REFERENCES groups (id) ON DELETE CASCADE,
-  created_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL,
   body TEXT
 );
 
