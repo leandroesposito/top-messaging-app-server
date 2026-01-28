@@ -35,4 +35,12 @@ async function usernameExists(username) {
   return res.length > 0;
 }
 
-module.exports = { createUser, usernameExists };
+async function getUserByUsername(username) {
+  const query = `SELECT id, username, password FROM users WHERE username = $1`;
+  const params = [username];
+
+  const res = await runQuery(query, params);
+  return res[0];
+}
+
+module.exports = { createUser, usernameExists, getUserByUsername };
