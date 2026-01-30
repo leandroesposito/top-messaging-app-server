@@ -35,14 +35,14 @@ const logIn = [
 
     const accessToken = jwt.sign(
       { userId: user.id, type: "access" },
-      process.env.JWT_TOKEN,
+      process.env.JWT_SECRET,
       {
         expiresIn: "15m",
       },
     );
     const refreshToken = jwt.sign(
       { userId: user.id, type: "refresh" },
-      process.env.JWT_TOKEN,
+      process.env.JWT_SECRET,
       {
         expiresIn: "7d",
       },
