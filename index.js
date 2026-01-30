@@ -1,11 +1,15 @@
 require("dotenv").config();
 const express = require("express");
 const { indexRouter } = require("./routes");
+const passport = require("passport");
+const jwtStratety = require("./auth/jwt-strategy");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+passport.use(jwtStratety);
 
 app.use("/", indexRouter);
 
