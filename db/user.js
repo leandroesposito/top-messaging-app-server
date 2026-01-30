@@ -43,4 +43,12 @@ async function getUserByUsername(username) {
   return res[0];
 }
 
-module.exports = { createUser, usernameExists, getUserByUsername };
+async function getUserById(id) {
+  const query = `SELECT id, username, friend_code, is_online FROM users WHERE id = $1`;
+  const params = [id];
+
+  const res = await runQuery(query, params);
+  return res[0];
+}
+
+module.exports = { createUser, usernameExists, getUserByUsername, getUserById };
