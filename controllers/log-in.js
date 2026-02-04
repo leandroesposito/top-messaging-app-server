@@ -7,6 +7,7 @@ const {
   generateRefreshToken,
   generateAccessToken,
 } = require("./token-generator");
+const { createRefreshToken } = require("../db/refresh-token");
 
 const validateUser = [
   body("username")
@@ -39,6 +40,7 @@ const logIn = [
     const accessToken = generateAccessToken(user.id);
 
     const refreshToken = generateRefreshToken(user.id);
+    await createRefreshToken(refreshToken, user.id);
 
     res.status(200).json({ username, accessToken, refreshToken });
   },
