@@ -1,9 +1,12 @@
 require("dotenv").config();
 const { body } = require("express-validator");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const { checkValidations } = require("./input-validations");
 const userDB = require("../db/user");
+const {
+  generateRefreshToken,
+  generateAccessToken,
+} = require("./token-generator");
 
 const validateUser = [
   body("username")
@@ -33,20 +36,9 @@ const logIn = [
         .json({ errors: ["Invalid username or password!"] });
     }
 
-    const accessToken = jwt.sign(
-      { userId: user.id, type: "access" },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "15m",
-      },
-    );
-    const refreshToken = jwt.sign(
-      { userId: user.id, type: "refresh" },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      },
-    );
+    const accessToken = generateAccessToken(user.id);
+
+    const refreshToken = generateRefreshToken(user.id);
 
     res.status(200).json({ username, accessToken, refreshToken });
   },
