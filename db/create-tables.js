@@ -1,4 +1,5 @@
 const query = `
+DROP TABLE IF EXISTS refresh_tokens;
 DROP TABLE IF EXISTS users_groups;
 DROP TABLE IF EXISTS group_messages;
 DROP TABLE IF EXISTS friends;
@@ -58,6 +59,12 @@ CREATE TABLE IF NOT EXISTS group_messages (
   created_at TIMESTAMP NOT NULL,
   body TEXT
 );
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  token TEXT UNIQUE NOT NULL,
+  user_id INT REFERENCES users (id) ON DELETE CASCADE
+)
 
 `;
 
