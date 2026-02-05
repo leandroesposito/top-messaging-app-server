@@ -71,8 +71,11 @@ describe("test index route", function () {
           password: "razor111",
           "confirm-password": "razor111",
         })
-
-        .expect(200, { message: "User created succesfuly" }, done);
+        .then((response) => {
+          expect(response.status).toEqual(200);
+          expect(response.body.message).toEqual("User created succesfuly");
+          done();
+        });
     });
   });
 });
