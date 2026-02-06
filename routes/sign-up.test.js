@@ -29,36 +29,67 @@ describe("test sign-up route", function () {
 
   describe("sign-up validate inputs", () => {
     test("missing password", (done) => {
-      request(app).post("/").send({ username: "razor11" }).expect(409, done);
+      request(app)
+        .post("/")
+        .type("form")
+        .send({ username: "razor11" })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Password is required to sign up",
+          );
+          done();
+        });
     });
 
     test("missing confirm-password", (done) => {
       request(app)
         .post("/")
-        .send({ username: "razor11", password: "razor11" })
-        .expect(409, done);
+        .type("form")
+        .send({ username: "razor11", password: "razor111" })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Password confirmation is required to sign up",
+          );
+          done();
+        });
     });
 
     test("short password", (done) => {
       request(app)
         .post("/")
+        .type("form")
         .send({
-          username: "razor",
+          username: "razor11",
           password: "razor11",
           "confirm-password": "razor11",
         })
-        .expect(409, done);
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Password must be at least 8 characters!",
+          );
+          done();
+        });
     });
 
     test("confirm-password don't match password", (done) => {
       request(app)
         .post("/")
+        .type("form")
         .send({
-          username: "razor",
+          username: "razor11",
           password: "razor111",
           "confirm-password": "razor112",
         })
-        .expect(409, done);
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Password must be equal to password confirmation!",
+          );
+          done();
+        });
     });
   });
 });
