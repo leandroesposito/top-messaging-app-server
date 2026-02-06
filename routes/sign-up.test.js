@@ -28,6 +28,20 @@ describe("test sign-up route", function () {
   });
 
   describe("sign-up validate inputs", () => {
+    test("missing username", (done) => {
+      request(app)
+        .post("/")
+        .type("form")
+        .send({ password: "razor11" })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Username is required to sign up",
+          );
+          done();
+        });
+    });
+
     test("missing password", (done) => {
       request(app)
         .post("/")
@@ -88,6 +102,22 @@ describe("test sign-up route", function () {
           expect(response.body.errors[0]).toEqual(
             "Password must be equal to password confirmation!",
           );
+          done();
+        });
+    });
+
+    test("used username", (done) => {
+      request(app)
+        .post("/")
+        .type("form")
+        .send({
+          username: "razor",
+          password: "razor222",
+          "confirm-password": "razor222",
+        })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual("Username razor is used!");
           done();
         });
     });
