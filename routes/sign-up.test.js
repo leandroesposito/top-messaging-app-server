@@ -11,39 +11,6 @@ describe("test sign-up route", function () {
   beforeAll(initDatabase);
   afterAll(endPool);
 
-  test("sign up validate inputs", (done) => {
-    request(app).post("/").send({ username: "razor11" }).expect(409, done);
-  });
-
-  test("sign-up validate inputs", (done) => {
-    request(app)
-      .post("/")
-      .send({ username: "razor11", password: "razor11" })
-      .expect(409, done);
-  });
-
-  test("sign-up validate inputs", (done) => {
-    request(app)
-      .post("/")
-      .send({
-        username: "razor",
-        password: "razor11",
-        "confirm-password": "razor11",
-      })
-      .expect(409, done);
-  });
-
-  test("sign-up validate inputs", (done) => {
-    request(app)
-      .post("/")
-      .send({
-        username: "razor",
-        password: "razor111",
-        "confirm-password": "razor112",
-      })
-      .expect(409, done);
-  });
-
   test("sign-up works", (done) => {
     request(app)
       .post("/")
@@ -58,5 +25,40 @@ describe("test sign-up route", function () {
         expect(response.body.message).toEqual("User created succesfuly");
         done();
       });
+  });
+
+  describe("sign-up validate inputs", () => {
+    test("missing password", (done) => {
+      request(app).post("/").send({ username: "razor11" }).expect(409, done);
+    });
+
+    test("missing confirm-password", (done) => {
+      request(app)
+        .post("/")
+        .send({ username: "razor11", password: "razor11" })
+        .expect(409, done);
+    });
+
+    test("short password", (done) => {
+      request(app)
+        .post("/")
+        .send({
+          username: "razor",
+          password: "razor11",
+          "confirm-password": "razor11",
+        })
+        .expect(409, done);
+    });
+
+    test("confirm-password don't match password", (done) => {
+      request(app)
+        .post("/")
+        .send({
+          username: "razor",
+          password: "razor111",
+          "confirm-password": "razor112",
+        })
+        .expect(409, done);
+    });
   });
 });
