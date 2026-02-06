@@ -21,20 +21,36 @@ describe("test log-in route", function () {
   });
   afterAll(endPool);
 
-  test("log-in validate inputs", (done) => {
-    request(app)
-      .post("/log-in")
-      .send({ username: "razor11" })
-      .expect(409, done);
-  });
+  describe("log-in validate inputs", () => {
+    test("missing password", (done) => {
+      request(app)
+        .post("/log-in")
+        .type("form")
+        .send({ username: "razor11" })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Password is required to log in",
+          );
+          done();
+        });
+    });
 
-  test("log-in validate inputs", (done) => {
-    request(app)
-      .post("/log-in")
-      .send({
-        password: "razor11",
-      })
-      .expect(409, done);
+    test("missing username", (done) => {
+      request(app)
+        .post("/log-in")
+        .type("form")
+        .send({
+          password: "razor11",
+        })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "Username is required to log in",
+          );
+          done();
+        });
+    });
   });
 
   test("log-in works", (done) => {
