@@ -12,7 +12,14 @@ function endPool() {
   return pool.end();
 }
 
+function delay(time) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+}
+
 module.exports = {
   initDatabase,
   endPool,
+  delay,
 };
