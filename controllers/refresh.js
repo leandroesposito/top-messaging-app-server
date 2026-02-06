@@ -10,7 +10,7 @@ const {
 
 const refresh = [
   body("refreshToken")
-    .exists()
+    .exists({ values: "falsy" })
     .withMessage("refreshToken must be provided!")
     .custom(async (value, { req }) => {
       const { userId, type } = jwt.verify(value, process.env.JWT_SECRET);
