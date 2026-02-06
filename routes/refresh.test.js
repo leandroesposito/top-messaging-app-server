@@ -33,33 +33,55 @@ describe("test refresh route", function () {
   });
   afterAll(endPool);
 
-  test("refresh validate inputs", (done) => {
-    request(app).post("/refresh").expect(409, done);
-  });
-
-  test("refresh validate inputs", (done) => {
-    request(app)
-      .post("/refresh")
-      .send({
-        refreshToken: "",
-      })
-      .expect(409, done);
-  });
-
-  test("refresh validate inputs", async () => {
-    const login = await request(app).post("/log-in").type("form").send({
-      username: "user1",
-      password: "password1",
+  describe("validate inputs", () => {
+    test("missing refresh token", (done) => {
+      request(app)
+        .post("/refresh")
+        .type("form")
+        .send({})
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "refreshToken must be provided!",
+          );
+          done();
+        });
     });
 
-    const { accessToken } = login.body;
+    test("empty refresh token", (done) => {
+      request(app)
+        .post("/refresh")
+        .type("form")
+        .send({
+          refreshToken: "",
+        })
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "refreshToken must be provided!",
+          );
+        });
+      done();
+    });
 
-    const incorrectTokenResponse = await request(app)
-      .post("/refresh")
-      .type("form")
-      .send({ refreshToken: accessToken });
+    test("incorrect token type", async () => {
+      const login = await request(app).post("/log-in").type("form").send({
+        username: "user1",
+        password: "password1",
+      });
 
-    expect(incorrectTokenResponse.status).toEqual(409);
+      const { accessToken } = login.body;
+
+      const incorrectTokenResponse = await request(app)
+        .post("/refresh")
+        .type("form")
+        .send({ refreshToken: accessToken });
+
+      expect(incorrectTokenResponse.status).toEqual(409);
+      expect(incorrectTokenResponse.body.errors[0]).toEqual(
+        "Invalid token type, must be 'refresh' type",
+      );
+    });
   });
 
   test("refresh works", async () => {
@@ -128,6 +150,9 @@ describe("test refresh route", function () {
 
     // must be deleted for security reasons
     expect(unusedTokenSameUserResponse.status).toEqual(409);
+    expect(unusedTokenSameUserResponse.body.errors[0]).toEqual(
+      "Refresh token not found, may have been already used in other device, session closed for security reasons!",
+    );
 
     // user2 first refresh
     const user2RefreshResponse = await request(app)
