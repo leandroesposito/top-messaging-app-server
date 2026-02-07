@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 passport.use(jwtStratety);
 
-app.use("/", indexRouter);
+app.use("/api", indexRouter);
 
 const PORT = process.env.SERVER_PORT || 3000;
 app.listen(PORT, (error) => {
