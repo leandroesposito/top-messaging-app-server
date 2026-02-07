@@ -8,6 +8,10 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 
 const jwtStratety = new Strategy(opts, async function (jwtPayload, done) {
   try {
+    if (jwtPayload.type !== "access") {
+      return done(null, false, { name: "JsonWebTokenError" });
+    }
+
     const user = await userDB.getUserById(jwtPayload.userId);
 
     if (!user) {
