@@ -8,8 +8,8 @@ const {
   generateRefreshToken,
 } = require("./token-generator");
 
-const refresh = [
-  body("refreshToken")
+function refreshTokenValidator() {
+  return body("refreshToken")
     .exists({ values: "falsy" })
     .withMessage("refreshToken must be provided!")
     .custom(async (value, { req }) => {
@@ -28,7 +28,11 @@ const refresh = [
 
       req.locals = { userId };
       return true;
-    }),
+    });
+}
+
+const refresh = [
+  refreshTokenValidator(),
   checkValidations,
   async function (req, res) {
     const oldToken = req.body.refreshToken;
@@ -44,4 +48,4 @@ const refresh = [
   },
 ];
 
-module.exports = { refresh };
+module.exports = { refresh, refreshTokenValidator };
