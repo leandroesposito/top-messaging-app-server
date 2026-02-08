@@ -23,8 +23,8 @@ async function createUser(username, password) {
   `;
   const params = [username, password, friendCode];
 
-  const userId = await runQuery(query, params);
-  return userId;
+  const newUser = await runQuery(query, params);
+  return newUser[0].id;
 }
 
 async function usernameExists(username) {
