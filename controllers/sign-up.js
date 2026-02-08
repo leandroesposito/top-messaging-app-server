@@ -2,6 +2,7 @@ const { body } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const { checkValidations } = require("./input-validations");
 const userDB = require("../db/user");
+const profileDB = require("../db/profile");
 
 const validateUser = [
   body("username")
@@ -41,8 +42,9 @@ const signUp = [
     const securePassword = await bcrypt.hash(password, 10);
 
     const newUserId = await userDB.createUser(username, securePassword);
+    const newProfileId = await profileDB.createProfile(newUserId, username, "");
 
-    if (newUserId) {
+    if (newUserId && newProfileId) {
       res.status(200).json({ message: "User created succesfuly" });
     } else {
       res.status(500).json({ errors: ["Error creating user"] });
