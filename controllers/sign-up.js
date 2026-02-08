@@ -1,6 +1,5 @@
 const { body } = require("express-validator");
 const bcrypt = require("bcryptjs");
-const { usernameExists, createUser } = require("../db/user");
 const { checkValidations } = require("./input-validations");
 const userDB = require("../db/user");
 
@@ -13,7 +12,7 @@ const validateUser = [
     .isLength({ min: 4, max: 10 })
     .withMessage("Username must be between 4 and 10 characters both inclusive")
     .custom(async (value) => {
-      if (await usernameExists(value)) {
+      if (await userDB.usernameExists(value)) {
         throw new Error(`Username ${value} is used!`);
       }
       return true;
