@@ -25,7 +25,7 @@ async function updateProfileByUserId(userId, public_name, description) {
 }
 
 async function getProfileByUserId(userId) {
-  const query = `SELECT public_name, description FROM profiles WHERE user_id = $1`;
+  const query = `SELECT user_id, public_name, description FROM profiles WHERE user_id = $1`;
   const params = [userId];
 
   const res = await runQuery(query, params);
