@@ -12,6 +12,18 @@ async function createProfile(user_id, public_name, description) {
   return newProfile[0].id;
 }
 
+async function updateProfileByUserId(userId, public_name, description) {
+  const query = `
+    UPDATE profiles
+      SET public_name = $2, description = $3
+      WHERE user_id = $1
+  `;
+  const params = [userId, public_name, description];
+
+  await runQuery(query, params);
+  return true;
+}
+
 async function getProfileByUserId(userId) {
   const query = `SELECT public_name, description FROM profiles WHERE user_id = $1`;
   const params = [userId];
@@ -22,5 +34,6 @@ async function getProfileByUserId(userId) {
 
 module.exports = {
   createProfile,
+  updateProfileByUserId,
   getProfileByUserId,
 };
