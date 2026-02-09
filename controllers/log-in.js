@@ -9,7 +9,7 @@ const {
 } = require("./token-generator");
 const { createRefreshToken } = require("../db/refresh-token");
 
-const validateUser = [
+const validateUser = () => [
   body("username")
     .exists()
     .withMessage("Username is required to log in")
@@ -18,7 +18,7 @@ const validateUser = [
 ];
 
 const logIn = [
-  validateUser,
+  validateUser(),
   checkValidations,
   async function (req, res) {
     const { username, password } = req.body;
