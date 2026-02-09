@@ -2,10 +2,10 @@ require("dotenv").config();
 const refreshTokenDB = require("../db/refresh-token");
 const { checkValidations } = require("./input-validations");
 
-const { refreshTokenValidator } = require("./refresh");
+const { validateRefreshToken } = require("./refresh");
 
 const logOut = [
-  refreshTokenValidator(),
+  validateRefreshToken(),
   checkValidations,
   async function (req, res) {
     const oldToken = req.body.refreshToken;

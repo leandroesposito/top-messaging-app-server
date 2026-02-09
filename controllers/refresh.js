@@ -8,7 +8,7 @@ const {
   generateRefreshToken,
 } = require("./token-generator");
 
-function refreshTokenValidator() {
+function validateRefreshToken() {
   return body("refreshToken")
     .exists({ values: "falsy" })
     .withMessage("refreshToken must be provided!")
@@ -32,7 +32,7 @@ function refreshTokenValidator() {
 }
 
 const refresh = [
-  refreshTokenValidator(),
+  validateRefreshToken(),
   checkValidations,
   async function (req, res) {
     const oldToken = req.body.refreshToken;
@@ -48,4 +48,4 @@ const refresh = [
   },
 ];
 
-module.exports = { refresh, refreshTokenValidator };
+module.exports = { refresh, validateRefreshToken };
