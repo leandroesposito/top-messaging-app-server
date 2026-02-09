@@ -27,7 +27,7 @@ const modifyProfile = [
   checkValidations,
   async function (req, res) {
     const publicName = req.body["public-name"];
-    const description = req.body || "";
+    const description = req.body.description || "";
     const userId = req.user.id;
 
     const modified = await profileDB.updateProfileByUserId(
