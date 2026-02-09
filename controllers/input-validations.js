@@ -1,4 +1,6 @@
-const { validationResult } = require("express-validator");
+const { validationResult, param } = require("express-validator");
+const userDB = require("../db/user");
+const NotFoundError = require("../errors/NotFoundError");
 
 function checkValidations(req, res, next) {
   const errors = validationResult(req);
@@ -8,4 +10,16 @@ function checkValidations(req, res, next) {
   next();
 }
 
-module.exports = { checkValidations };
+function validateUserId() {
+  return param("userId").custom(async (value, { req }) => {
+    const user = await userDB.getUserById(value);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    req.locals = { userId: user.id };
+    return true;
+  });
+}
+
+module.exports = { checkValidations, validateUserId };
