@@ -42,7 +42,12 @@ const logIn = [
     const refreshToken = generateRefreshToken(user.id);
     await createRefreshToken(refreshToken, user.id);
 
-    res.status(200).json({ username, accessToken, refreshToken });
+    res.status(200).json({
+      username,
+      accessToken,
+      refreshToken,
+      friendCode: user.friend_code,
+    });
   },
 ];
 

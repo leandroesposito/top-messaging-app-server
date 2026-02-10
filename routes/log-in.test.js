@@ -66,6 +66,7 @@ describe("test log-in route", function () {
         expect(response.body.username).toBeDefined();
         expect(response.body.accessToken).toBeDefined();
         expect(response.body.refreshToken).toBeDefined();
+        expect(response.body.friendCode).toBeDefined();
 
         const accessTokenData = jwt.verify(
           response.body.accessToken,

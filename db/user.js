@@ -36,7 +36,7 @@ async function usernameExists(username) {
 }
 
 async function getUserByUsername(username) {
-  const query = `SELECT id, username, password FROM users WHERE username = $1`;
+  const query = `SELECT id, username, password, friend_code FROM users WHERE username = $1`;
   const params = [username];
 
   const res = await runQuery(query, params);
