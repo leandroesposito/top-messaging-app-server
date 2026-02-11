@@ -47,6 +47,7 @@ const logIn = [
       accessToken,
       refreshToken,
       friendCode: user.friend_code,
+      publicName: user.public_name,
     });
   },
 ];
