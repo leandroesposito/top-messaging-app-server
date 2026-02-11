@@ -38,7 +38,7 @@ function validateFriendCode() {
   });
 }
 
-function validateFriendsPairExist() {
+function validateFriendsPairDontExist() {
   return param("friendCode").custom(async (value, { req }) => {
     if (!req.locals || !req.locals.friend) {
       return false;
@@ -60,5 +60,5 @@ module.exports = {
   checkValidations,
   validateUserId,
   validateFriendCode,
-  validateFriendsPairExist,
+  validateFriendsPairDontExist,
 };

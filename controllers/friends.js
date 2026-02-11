@@ -3,14 +3,14 @@ const userDB = require("../db/user");
 const friendsDB = require("../db/friends");
 const {
   validateFriendCode,
-  validateFriendsPairExist,
+  validateFriendsPairDontExist,
   checkValidations,
 } = require("./input-validations");
 
 const addFriend = [
   authenticate,
   validateFriendCode(),
-  validateFriendsPairExist(),
+  validateFriendsPairDontExist(),
   checkValidations,
   async function (req, res) {
     friendsDB.addFriendsPair(req.user.id, req.locals.friend.id);
