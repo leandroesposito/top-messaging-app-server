@@ -99,8 +99,8 @@ describe("test users route", function () {
         .get("/users/1/profile")
         .then((response) => {
           expect(response.status).toEqual(200);
-          expect(response.body["user_id"]).toEqual(1);
-          expect(response.body["public_name"]).toEqual("user1");
+          expect(response.body.userId).toEqual(1);
+          expect(response.body.publicName).toEqual("user1");
           expect(response.body.description).toEqual("");
         });
     });
@@ -121,8 +121,8 @@ describe("test users route", function () {
         .get("/users/1/profile")
         .then((response) => {
           expect(response.status).toEqual(200);
-          expect(response.body["user_id"]).toEqual(1);
-          expect(response.body["public_name"]).toEqual("123456");
+          expect(response.body.userId).toEqual(1);
+          expect(response.body.publicName).toEqual("123456");
           expect(response.body.description).toEqual("1".repeat(500));
         });
     });

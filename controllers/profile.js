@@ -48,7 +48,11 @@ const getProfile = [
   async function (req, res) {
     const profile = await profileDB.getProfileByUserId(req.locals.userId);
 
-    res.status(200).json(profile);
+    res.status(200).json({
+      userId: profile.user_id,
+      publicName: profile.public_name,
+      description: profile.description,
+    });
   },
 ];
 
