@@ -56,4 +56,42 @@ async function getUserById(id) {
   return res[0];
 }
 
-module.exports = { createUser, usernameExists, getUserByUsername, getUserById };
+async function getUserByFriendCode(friendCode) {
+  const query = `
+    SELECT u.id, u.username, p.public_name
+    FROM users u
+    JOIN profiles p
+    ON u.id = p.user_id
+    WHERE u.friend_code = $1`;
+  const params = [friendCode];
+
+  const res = await runQuery(query, params);
+  return res[0];
+}
+
+async function getUserFriendsById(id) {
+  const query = `
+    SELECT u.id, p.public_name, u.is_online
+    FROM friends f
+    JOIN users u
+      ON f.uid1 = u.id
+        OR f.uid2 = u.id
+    JOIN profiles p
+      ON u.id = p.user_id
+    WHERE (f.uid1 = $1 OR f.uid2 = $1)
+      AND u.id != $1;
+    `;
+  const params = [id];
+
+  const res = await runQuery(query, params);
+  return res;
+}
+
+module.exports = {
+  createUser,
+  usernameExists,
+  getUserByUsername,
+  getUserById,
+  getUserFriendsById,
+  getUserByFriendCode,
+};
