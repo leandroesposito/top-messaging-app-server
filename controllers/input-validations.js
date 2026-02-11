@@ -1,5 +1,6 @@
-const { validationResult, param } = require("express-validator");
+const { validationResult, param, check } = require("express-validator");
 const userDB = require("../db/user");
+const friendsDB = require("../db/friends");
 const NotFoundError = require("../errors/NotFoundError");
 
 function checkValidations(req, res, next) {
@@ -22,4 +23,42 @@ function validateUserId() {
   });
 }
 
-module.exports = { checkValidations, validateUserId };
+function validateFriendCode() {
+  return param("friendCode").custom(async (value, { req }) => {
+    const friend = await userDB.getUserByFriendCode(value);
+    if (!friend) {
+      throw new NotFoundError("User not found");
+    }
+    if (friend.id == req.user.id) {
+      throw new Error("You can't add yourself as a friend");
+    }
+
+    req.locals = { friend };
+    return true;
+  });
+}
+
+function validateFriendsPairExist() {
+  return param("friendCode").custom(async (value, { req }) => {
+    if (!req.locals || !req.locals.friend) {
+      return false;
+    }
+    const friendsPairExist = await friendsDB.friendsPairExist(
+      req.user.id,
+      req.locals.friend.id,
+    );
+    if (friendsPairExist) {
+      throw new Error(
+        `You are already friend with ${req.locals.friend.public_name}`,
+      );
+    }
+    return true;
+  });
+}
+
+module.exports = {
+  checkValidations,
+  validateUserId,
+  validateFriendCode,
+  validateFriendsPairExist,
+};
