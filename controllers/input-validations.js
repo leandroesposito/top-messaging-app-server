@@ -56,9 +56,27 @@ function validateFriendsPairDontExist() {
   });
 }
 
+function validateFriendsPairExist() {
+  return param("userId").custom(async (value, { req }) => {
+    if (!req.locals || !req.locals.userId) {
+      return false;
+    }
+    const friendsPairExist = await friendsDB.friendsPairExist(
+      req.user.id,
+      req.locals.userId,
+    );
+
+    if (!friendsPairExist) {
+      throw new Error(`You don't have a friend with that id.`);
+    }
+    return true;
+  });
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
   validateFriendCode,
   validateFriendsPairDontExist,
+  validateFriendsPairExist,
 };
