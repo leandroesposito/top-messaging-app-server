@@ -1,4 +1,4 @@
-const { validationResult, param, check } = require("express-validator");
+const { validationResult, param, body } = require("express-validator");
 const userDB = require("../db/user");
 const friendsDB = require("../db/friends");
 const NotFoundError = require("../errors/NotFoundError");
@@ -73,10 +73,22 @@ function validateFriendsPairExist() {
   });
 }
 
+function validateGroupName() {
+  return body("name")
+    .trim()
+    .exists({ values: "falsy" })
+    .withMessage("Group name is required")
+    .isLength({ min: 4, max: 50 })
+    .withMessage(
+      "Group name must be between 4 and 50 characters both inclusive",
+    );
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
   validateFriendCode,
   validateFriendsPairDontExist,
   validateFriendsPairExist,
+  validateGroupName,
 };
