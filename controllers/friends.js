@@ -5,6 +5,8 @@ const {
   validateFriendCode,
   validateFriendsPairDontExist,
   checkValidations,
+  validateFriendsPairExist,
+  validateUserId,
 } = require("./input-validations");
 
 const addFriend = [
@@ -17,6 +19,21 @@ const addFriend = [
 
     res.status(200).json({
       message: `${req.locals.friend.public_name} added as a friend succesfully.`,
+    });
+  },
+];
+
+const deleteFriend = [
+  authenticate,
+  validateUserId(),
+  validateFriendsPairExist(),
+  checkValidations,
+  async function (req, res) {
+    const deletedFriend = await userDB.getUserById(req.params.userId);
+    await friendsDB.deleteFriendsPair(req.user.id, req.params.userId);
+
+    res.status(200).json({
+      message: `${deletedFriend.public_name} was deleted from your friends list.`,
     });
   },
 ];
@@ -36,4 +53,4 @@ const getFriends = [
   },
 ];
 
-module.exports = { getFriends, addFriend };
+module.exports = { getFriends, addFriend, deleteFriend };
