@@ -49,7 +49,12 @@ async function getUserByUsername(username) {
 }
 
 async function getUserById(id) {
-  const query = `SELECT id, username, friend_code, is_online FROM users WHERE id = $1`;
+  const query = `
+    SELECT u.id, u.username, u.friend_code, u.is_online, p.public_name
+    FROM users u
+    JOIN profiles p
+    ON u.id = p.user_id
+    WHERE u.id = $1`;
   const params = [id];
 
   const res = await runQuery(query, params);
