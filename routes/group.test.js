@@ -124,4 +124,33 @@ describe("test group route", function () {
         });
     });
   });
+
+  describe("get groups", () => {
+    test("missing token", () => {
+      return request(app)
+        .post(`/groups/`)
+        .type("form")
+        .send({
+          name: "the name",
+          description: "the description",
+        })
+        .then((response) => {
+          expect(response.status).toEqual(401);
+          expect(response.body.errors[0]).toEqual("invalid token");
+        });
+    });
+
+    test("get groups", () => {
+      return request(app)
+        .get(`/groups/`)
+        .set("Authorization", token)
+        .then((response) => {
+          console.log(response);
+          expect(response.status).toEqual(200);
+          expect(response.body.groups).toBeDefined();
+          expect(response.body.groups.length).toEqual(1);
+          expect(response.body.groups[0].name).toEqual("the name");
+        });
+    });
+  });
 });

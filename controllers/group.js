@@ -20,4 +20,12 @@ const createGroup = [
   },
 ];
 
-module.exports = { createGroup };
+const getGroups = [
+  authenticate,
+  async function (req, res) {
+    const groups = await groupDB.getUserGroups(req.user.id);
+    res.status(200).json({ groups });
+  },
+];
+
+module.exports = { createGroup, getGroups };
