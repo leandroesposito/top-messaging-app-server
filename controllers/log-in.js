@@ -43,6 +43,7 @@ const logIn = [
     await createRefreshToken(refreshToken, user.id);
 
     res.status(200).json({
+      id: user.id,
       username,
       accessToken,
       refreshToken,
