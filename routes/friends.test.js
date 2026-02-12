@@ -22,7 +22,7 @@ describe("test friends route", function () {
   beforeAll(async () => {
     await initDatabase();
 
-    for (let i = 1; i < 4; i++) {
+    for (let i = 1; i < 5; i++) {
       await request(app)
         .post("/sign-up")
         .type("form")
@@ -82,15 +82,23 @@ describe("test friends route", function () {
     });
 
     test("add friend", async () => {
-      const user2PublicName = logins[1].publicName;
-
-      return request(app)
+      await request(app)
         .post(`/friends/${logins[1].friendCode}`)
         .set("Authorization", `bearer ${accessToken}`)
         .then((response) => {
           expect(response.status).toEqual(200);
           expect(response.body.message).toEqual(
-            `${user2PublicName} added as a friend succesfully.`,
+            `${logins[1].publicName} added as a friend succesfully.`,
+          );
+        });
+
+      await request(app)
+        .post(`/friends/${logins[2].friendCode}`)
+        .set("Authorization", `bearer ${accessToken}`)
+        .then((response) => {
+          expect(response.status).toEqual(200);
+          expect(response.body.message).toEqual(
+            `${logins[2].publicName} added as a friend succesfully.`,
           );
         });
     });
@@ -127,11 +135,68 @@ describe("test friends route", function () {
         .then((response) => {
           expect(response.status).toEqual(200);
           expect(response.body.friends).toBeDefined();
+          expect(response.body.friends.length).toEqual(2);
           expect(response.body.friends[0].publicName).toEqual(
             logins[1].publicName,
           );
           expect(response.body.friends[0].id).toBeDefined();
           expect(response.body.friends[0].isOnline).toBeDefined();
+        });
+    });
+  });
+
+  describe("delete friend", () => {
+    test("missing token", () => {
+      return request(app)
+        .delete(`/friends/${logins[1].id}`)
+        .then((response) => {
+          expect(response.status).toEqual(401);
+          expect(response.body.errors[0]).toEqual("invalid token");
+        });
+    });
+
+    test("invalid user id", () => {
+      return request(app)
+        .delete(`/friends/99`)
+        .set("Authorization", `bearer ${accessToken}`)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual("User not found");
+        });
+    });
+
+    test("user exists but is not a friend", () => {
+      return request(app)
+        .delete(`/friends/${logins[3].id}`)
+        .set("Authorization", `bearer ${accessToken}`)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "You don't have a friend with that id.",
+          );
+        });
+    });
+
+    test("delete friend", async () => {
+      const deleteResponse = await request(app)
+        .delete(`/friends/${logins[1].id}`)
+        .set("Authorization", `bearer ${accessToken}`);
+
+      expect(deleteResponse.status).toEqual(200);
+      expect(deleteResponse.body.message).toEqual(
+        `${logins[1].publicName} was deleted from your friends list.`,
+      );
+
+      return request(app)
+        .get(`/friends/`)
+        .set("Authorization", `bearer ${accessToken}`)
+        .then((response) => {
+          expect(response.status).toEqual(200);
+          expect(response.body.friends).toBeDefined();
+          expect(response.body.friends.length).toEqual(1);
+          expect(response.body.friends[0].publicName).toEqual(
+            logins[2].publicName,
+          );
         });
     });
   });
