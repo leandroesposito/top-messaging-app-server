@@ -1,5 +1,6 @@
 const { validationResult, param, body } = require("express-validator");
 const userDB = require("../db/user");
+const groupDB = require("../db/group");
 const friendsDB = require("../db/friends");
 const NotFoundError = require("../errors/NotFoundError");
 
@@ -84,6 +85,18 @@ function validateGroupName() {
     );
 }
 
+function validateGroupId() {
+  return param("groupId").custom(async (value, { req }) => {
+    const group = await groupDB.getGroupInfo(value);
+    if (!group) {
+      throw new NotFoundError("Group not found");
+    }
+
+    req.locals = { group };
+    return true;
+  });
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
@@ -91,4 +104,5 @@ module.exports = {
   validateFriendsPairDontExist,
   validateFriendsPairExist,
   validateGroupName,
+  validateGroupId,
 };

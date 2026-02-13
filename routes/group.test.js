@@ -145,11 +145,45 @@ describe("test group route", function () {
         .get(`/groups/`)
         .set("Authorization", token)
         .then((response) => {
-          console.log(response);
           expect(response.status).toEqual(200);
           expect(response.body.groups).toBeDefined();
           expect(response.body.groups.length).toEqual(1);
           expect(response.body.groups[0].name).toEqual("the name");
+        });
+    });
+  });
+
+  describe("get group info", () => {
+    test("missing token", () => {
+      return request(app)
+        .get(`/groups/1`)
+        .then((response) => {
+          expect(response.status).toEqual(401);
+          expect(response.body.errors[0]).toEqual("invalid token");
+        });
+    });
+
+    test("non existent group id", () => {
+      return request(app)
+        .get(`/groups/10`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual("Group not found");
+        });
+    });
+
+    test("get groups", () => {
+      return request(app)
+        .get(`/groups/1`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.status).toEqual(200);
+          expect(response.body.group).toBeDefined();
+          expect(response.body.group.name).toEqual("the name");
+          expect(response.body.group.id).toBeDefined();
+          expect(response.body.group.inviteCode).toBeDefined();
+          expect(response.body.group.description).toBeDefined();
         });
     });
   });

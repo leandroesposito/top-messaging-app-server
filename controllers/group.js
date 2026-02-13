@@ -1,5 +1,9 @@
 const { authenticate } = require("../auth/authenticate");
-const { validateGroupName, checkValidations } = require("./input-validations");
+const {
+  validateGroupName,
+  checkValidations,
+  validateGroupId,
+} = require("./input-validations");
 const groupDB = require("../db/group");
 
 const createGroup = [
@@ -28,4 +32,19 @@ const getGroups = [
   },
 ];
 
-module.exports = { createGroup, getGroups };
+const getGroupInfo = [
+  authenticate,
+  validateGroupId(),
+  checkValidations,
+  async function (req, res) {
+    const group = {
+      id: req.locals.group.id,
+      inviteCode: req.locals.group.invite_code,
+      name: req.locals.group.name,
+      description: req.locals.group.description,
+    };
+    res.status(200).json({ group });
+  },
+];
+
+module.exports = { createGroup, getGroups, getGroupInfo };
