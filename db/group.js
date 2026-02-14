@@ -94,9 +94,9 @@ async function deleteUserFromGroup(uid, gid) {
       AND group_id = $2;`;
   const params = [uid, gid];
 
-  const res = await runQuery(query, params);
+  await runQuery(query, params);
 
-  return res.length > 0;
+  return true;
 }
 
 async function isOwner(uid, gid) {
