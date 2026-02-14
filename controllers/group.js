@@ -6,6 +6,7 @@ const {
   validateGroupOwnership,
   validateInviteCode,
   validateUserIsNotInGroup,
+  validateUserIsInGroup,
 } = require("./input-validations");
 const groupDB = require("../db/group");
 
@@ -93,10 +94,32 @@ const joinGroup = [
   },
 ];
 
+const leaveGroup = [
+  authenticate,
+  validateGroupId(),
+  validateUserIsInGroup(),
+  checkValidations,
+  async function (req, res) {
+    const success = await groupDB.deleteUserFromGroup(
+      req.user.id,
+      req.locals.group.id,
+    );
+
+    if (success) {
+      res.status(200).json({
+        message: `You are not part of the group ${req.locals.group.name} anymore`,
+      });
+    } else {
+      res.status(500).json({ errors: ["Error leaving group"] });
+    }
+  },
+];
+
 module.exports = {
   createGroup,
   getGroups,
   getGroupInfo,
   deleteGroup,
   joinGroup,
+  leaveGroup,
 };

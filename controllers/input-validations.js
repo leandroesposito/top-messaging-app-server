@@ -134,6 +134,20 @@ function validateUserIsNotInGroup() {
   });
 }
 
+function validateUserIsInGroup() {
+  return param().custom(async (value, { req }) => {
+    const isInGroup = await groupDB.userIsInGroup(
+      req.user.id,
+      req.locals.group.id,
+    );
+    if (!isInGroup) {
+      throw new Error(`You are not part of the group ${req.locals.group.name}`);
+    }
+
+    return true;
+  });
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
@@ -145,4 +159,5 @@ module.exports = {
   validateGroupOwnership,
   validateInviteCode,
   validateUserIsNotInGroup,
+  validateUserIsInGroup,
 };

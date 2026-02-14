@@ -312,4 +312,65 @@ describe("test group route", function () {
         });
     });
   });
+
+  describe("leave group", () => {
+    test("missing token", () => {
+      return request(app)
+        .delete(`/groups/1/leave`)
+        .then((response) => {
+          expect(response.status).toEqual(401);
+          expect(response.body.errors[0]).toEqual("invalid token");
+        });
+    });
+
+    test("leave non existent group", () => {
+      return request(app)
+        .delete(`/groups/10/leave`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual("Group not found");
+        });
+    });
+
+    test("leave group you are not part of", async () => {
+      const name = "third group";
+      await request(app)
+        .post(`/groups/`)
+        .set("Authorization", token)
+        .type("form")
+        .send({
+          name,
+          description: "the description",
+        });
+
+      return request(app)
+        .delete(`/groups/3/leave`)
+        .set("Authorization", token2)
+        .then((response) => {
+          expect(response.body.errors[0]).toEqual(
+            `You are not part of the group ${name}`,
+          );
+        });
+    });
+
+    test("leave group", async () => {
+      const name = "second group";
+
+      const leaveResponse = await request(app)
+        .delete(`/groups/2/leave`)
+        .set("Authorization", token);
+
+      expect(leaveResponse.body.message).toEqual(
+        `You are not part of the group ${name} anymore`,
+      );
+
+      return request(app)
+        .get(`/groups/`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.body.groups.length).toEqual(1);
+        });
+    });
+  });
 });
