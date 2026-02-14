@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS groups (
 );
 
 CREATE TABLE IF NOT EXISTS users_groups (
-  user_id INT REFERENCES users (id),
-  group_id INT REFERENCES groups (id),
+  user_id INT REFERENCES users (id) ON DELETE CASCADE,
+  group_id INT REFERENCES groups (id) ON DELETE CASCADE,
   is_owner BOOLEAN DEFAULT false,
   CONSTRAINT user_group PRIMARY KEY (user_id, group_id)
 );
