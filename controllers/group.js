@@ -28,7 +28,15 @@ const getGroups = [
   authenticate,
   async function (req, res) {
     const groups = await groupDB.getUserGroups(req.user.id);
-    res.status(200).json({ groups });
+
+    res.status(200).json({
+      groups: groups.map((group) => ({
+        id: group.id,
+        inviteCode: group.invite_code,
+        name: group.name,
+        description: group.description,
+      })),
+    });
   },
 ];
 
