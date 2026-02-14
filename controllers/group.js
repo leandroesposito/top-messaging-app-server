@@ -3,6 +3,9 @@ const {
   validateGroupName,
   checkValidations,
   validateGroupId,
+  validateGroupOwnership,
+  validateInviteCode,
+  validateUserIsNotInGroup,
 } = require("./input-validations");
 const groupDB = require("../db/group");
 
@@ -55,4 +58,45 @@ const getGroupInfo = [
   },
 ];
 
-module.exports = { createGroup, getGroups, getGroupInfo };
+const deleteGroup = [
+  authenticate,
+  validateGroupId(),
+  validateGroupOwnership(),
+  checkValidations,
+  async function (req, res) {
+    const success = await groupDB.deleteGroup(req.params.groupId);
+    if (success) {
+      res.status(200).json({
+        message: `${req.locals.group.name} group was deleted successfuly`,
+      });
+    } else {
+      res.status(500).json({ errors: ["Error deleting group"] });
+    }
+  },
+];
+
+const joinGroup = [
+  authenticate,
+  validateInviteCode(),
+  validateUserIsNotInGroup(),
+  checkValidations,
+  async function (req, res) {
+    const success = await groupDB.joinGroup(req.user.id, req.locals.group.id);
+
+    if (success) {
+      res.status(200).json({
+        message: `Welcome to ${req.locals.group.name} group`,
+      });
+    } else {
+      res.status(500).json({ errors: ["Error joining group"] });
+    }
+  },
+];
+
+module.exports = {
+  createGroup,
+  getGroups,
+  getGroupInfo,
+  deleteGroup,
+  joinGroup,
+};

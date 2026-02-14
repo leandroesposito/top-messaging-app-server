@@ -97,6 +97,43 @@ function validateGroupId() {
   });
 }
 
+function validateGroupOwnership() {
+  return param("groupId").custom(async (value, { req }) => {
+    const isOwner = await groupDB.isOwner(req.user.id, value);
+    if (!isOwner) {
+      throw new Error("You can't delete a group that you don't own.");
+    }
+
+    return true;
+  });
+}
+
+function validateInviteCode() {
+  return param("inviteCode").custom(async (value, { req }) => {
+    const group = await groupDB.getGroupByInviteCode(value);
+    if (!group) {
+      throw new NotFoundError("Group not found");
+    }
+
+    req.locals = { group };
+    return true;
+  });
+}
+
+function validateUserIsNotInGroup() {
+  return param().custom(async (value, { req }) => {
+    const isInGroup = await groupDB.userIsInGroup(
+      req.user.id,
+      req.locals.group.id,
+    );
+    if (isInGroup) {
+      throw new Error(`You are already in the group ${req.locals.group.name}`);
+    }
+
+    return true;
+  });
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
@@ -105,4 +142,7 @@ module.exports = {
   validateFriendsPairExist,
   validateGroupName,
   validateGroupId,
+  validateGroupOwnership,
+  validateInviteCode,
+  validateUserIsNotInGroup,
 };

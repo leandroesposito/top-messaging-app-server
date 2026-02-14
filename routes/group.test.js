@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 passport.use(jwtStratety);
 
 describe("test group route", function () {
-  let token;
+  let token, token2;
   beforeAll(async () => {
     await initDatabase();
     await request(app).post("/sign-up").type("form").send({
@@ -39,7 +39,13 @@ describe("test group route", function () {
       password: "password1",
     });
 
+    const login2 = await request(app).post("/log-in").type("form").send({
+      username: "user2",
+      password: "password2",
+    });
+
     token = "bearer " + login.body.accessToken;
+    token2 = "bearer " + login2.body.accessToken;
   });
   afterAll(endPool);
 
@@ -184,6 +190,125 @@ describe("test group route", function () {
           expect(response.body.group.id).toBeDefined();
           expect(response.body.group.inviteCode).toBeDefined();
           expect(response.body.group.description).toBeDefined();
+        });
+    });
+  });
+
+  describe("delete group", () => {
+    test("missing token", () => {
+      return request(app)
+        .delete(`/groups/1`)
+        .then((response) => {
+          expect(response.status).toEqual(401);
+          expect(response.body.errors[0]).toEqual("invalid token");
+        });
+    });
+
+    test("non existent group id", () => {
+      return request(app)
+        .delete(`/groups/10`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual("Group not found");
+        });
+    });
+
+    test("delete other user group", async () => {
+      await request(app)
+        .post(`/groups/`)
+        .set("Authorization", token2)
+        .type("form")
+        .send({
+          name: "second group",
+          description: "the description",
+        });
+
+      return request(app)
+        .delete(`/groups/2`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual(
+            "You can't delete a group that you don't own.",
+          );
+        });
+    });
+
+    test("delete group", async () => {
+      const name = "the name";
+      await request(app)
+        .delete(`/groups/1`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.status).toEqual(200);
+          expect(response.body.message).toEqual(
+            `${name} group was deleted successfuly`,
+          );
+        });
+
+      return request(app)
+        .get(`/groups/`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.body.groups.length).toEqual(0);
+        });
+    });
+  });
+
+  describe("join group", () => {
+    let inviteCode;
+    test("missing token", () => {
+      return request(app)
+        .post(`/groups/join/1`)
+        .then((response) => {
+          expect(response.status).toEqual(401);
+          expect(response.body.errors[0]).toEqual("invalid token");
+        });
+    });
+
+    test("non existent group invite code", () => {
+      return request(app)
+        .post(`/groups/join/10`)
+        .set("Authorization", token2)
+        .then((response) => {
+          expect(response.status).toEqual(409);
+          expect(response.body.errors[0]).toEqual("Group not found");
+        });
+    });
+
+    test("join group you are already in", async () => {
+      const groupsResponse = await request(app)
+        .get(`/groups/`)
+        .set("Authorization", token2);
+
+      inviteCode = groupsResponse.body.groups[0].inviteCode;
+
+      const name = "second group";
+      return request(app)
+        .post(`/groups/join/${inviteCode}`)
+        .set("Authorization", token2)
+        .then((response) => {
+          expect(response.body.errors[0]).toEqual(
+            `You are already in the group ${name}`,
+          );
+        });
+    });
+
+    test("join group", async () => {
+      const name = "second group";
+      const joinResponse = await request(app)
+        .post(`/groups/join/${inviteCode}`)
+        .set("Authorization", token);
+
+      expect(joinResponse.body.message).toEqual(`Welcome to ${name} group`);
+
+      return request(app)
+        .get(`/groups/`)
+        .set("Authorization", token)
+        .then((response) => {
+          expect(response.body.groups.length).toEqual(1);
+          expect(response.body.groups[0].name).toEqual(name);
         });
     });
   });

@@ -75,6 +75,17 @@ async function getGroupInfo(gid) {
   return res[0];
 }
 
+async function getGroupByInviteCode(inviteCode) {
+  const query = `
+    SELECT *
+    FROM groups
+    WHERE invite_code = $1`;
+  const params = [inviteCode];
+
+  const res = await runQuery(query, params);
+  return res[0];
+}
+
 async function deleteUserFromGroup(uid, gid) {
   const query = `
     DELETE
@@ -117,6 +128,14 @@ async function getGroupMembersById(id) {
   return res;
 }
 
+async function deleteGroup(gid) {
+  const query = `DELETE FROM groups WHERE id = $1`;
+  const params = [gid];
+
+  await runQuery(query, params);
+  return true;
+}
+
 module.exports = {
   createGroup,
   joinGroup,
@@ -124,6 +143,8 @@ module.exports = {
   getUserGroups,
   getGroupInfo,
   deleteUserFromGroup,
+  deleteGroup,
   isOwner,
   getGroupMembersById,
+  getGroupByInviteCode,
 };

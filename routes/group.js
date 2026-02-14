@@ -3,8 +3,10 @@ const groupController = require("../controllers/group");
 
 const groupRouter = Router();
 
+groupRouter.post("/join/:inviteCode", groupController.joinGroup);
+groupRouter.get("/:groupId", groupController.getGroupInfo);
+groupRouter.delete("/:groupId", groupController.deleteGroup);
 groupRouter.post("/", groupController.createGroup);
 groupRouter.get("/", groupController.getGroups);
-groupRouter.get("/:groupId", groupController.getGroupInfo);
 
 module.exports = { groupRouter };
