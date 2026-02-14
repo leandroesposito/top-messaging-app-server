@@ -41,9 +41,9 @@ async function joinGroup(uid, gid, isOwner = false) {
 async function userIsInGroup(uid, gid) {
   const query = `
     SELECT *
-    FROM groups
+    FROM users_groups
     WHERE user_id = $1
-      AND id = $2;`;
+      AND group_id = $2;`;
   const params = [uid, gid];
 
   const res = await runQuery(query, params);
