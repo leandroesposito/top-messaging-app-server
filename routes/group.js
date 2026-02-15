@@ -5,6 +5,7 @@ const groupRouter = Router();
 
 groupRouter.post("/join/:inviteCode", groupController.joinGroup);
 groupRouter.delete("/:groupId/leave", groupController.leaveGroup);
+groupRouter.get("/:groupId/members", groupController.getMembers);
 groupRouter.get("/:groupId", groupController.getGroupInfo);
 groupRouter.delete("/:groupId", groupController.deleteGroup);
 groupRouter.post("/", groupController.createGroup);

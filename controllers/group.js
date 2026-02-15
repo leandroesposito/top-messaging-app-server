@@ -115,6 +115,24 @@ const leaveGroup = [
   },
 ];
 
+const getMembers = [
+  authenticate,
+  validateGroupId(),
+  validateUserIsInGroup(),
+  checkValidations,
+  async function (req, res) {
+    const members = await groupDB.getGroupMembersById(req.locals.group.id);
+
+    res.status(200).json({
+      members: members.map((member) => ({
+        id: member.id,
+        publicName: member.public_name,
+        isOnline: member.is_online,
+      })),
+    });
+  },
+];
+
 module.exports = {
   createGroup,
   getGroups,
@@ -122,4 +140,5 @@ module.exports = {
   deleteGroup,
   joinGroup,
   leaveGroup,
+  getMembers,
 };

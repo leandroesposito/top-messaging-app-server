@@ -373,4 +373,67 @@ describe("test group route", function () {
         });
     });
   });
+
+  describe("members", () => {
+    beforeAll(async () => {
+      const user1Groups = await request(app)
+        .get(`/groups/`)
+        .set("Authorization", token);
+
+      inviteCode = user1Groups.body.groups[0].inviteCode;
+    });
+
+    describe("get members", () => {
+      test("missing token", () => {
+        return request(app)
+          .get(`/groups/1/members`)
+          .then((response) => {
+            expect(response.status).toEqual(401);
+            expect(response.body.errors[0]).toEqual("invalid token");
+          });
+      });
+
+      test("get members of non existing group", () => {
+        return request(app)
+          .get(`/groups/10/members`)
+          .set("Authorization", token)
+          .then((response) => {
+            expect(response.status).toEqual(409);
+            expect(response.body.errors[0]).toEqual("Group not found");
+          });
+      });
+
+      test("get members of group you are not part of", async () => {
+        const name = "third group";
+
+        return request(app)
+          .get(`/groups/3/members`)
+          .set("Authorization", token2)
+          .then((response) => {
+            expect(response.body.errors[0]).toEqual(
+              `You are not part of the group ${name}`,
+            );
+          });
+      });
+
+      test("get members", async () => {
+        await request(app)
+          .post(`/groups/join/${inviteCode}`)
+          .set("Authorization", token2);
+
+        return request(app)
+          .get(`/groups/3/members`)
+          .set("Authorization", token)
+          .then((response) => {
+            expect(response.body.members.length).toEqual(2);
+            expect(response.body.members[0].id).toBeDefined();
+            expect(response.body.members[0].publicName).toBeDefined();
+            expect(response.body.members[0].isOnline).toBeDefined();
+            expect(response.body.members[1].id).toBeDefined();
+            expect(response.body.members[1].publicName).toBeDefined();
+            expect(response.body.members[1].isOnline).toBeDefined();
+          });
+      });
+    });
+  });
 });
