@@ -101,7 +101,7 @@ function validateGroupOwnership() {
   return param("groupId").custom(async (value, { req }) => {
     const isOwner = await groupDB.isOwner(req.user.id, value);
     if (!isOwner) {
-      throw new Error("You can't delete a group that you don't own.");
+      throw new Error("You have to be the owner to complete the operation.");
     }
 
     return true;

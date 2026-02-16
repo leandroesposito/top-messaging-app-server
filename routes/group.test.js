@@ -230,7 +230,7 @@ describe("test group route", function () {
         .then((response) => {
           expect(response.status).toEqual(409);
           expect(response.body.errors[0]).toEqual(
-            "You can't delete a group that you don't own.",
+            "You have to be the owner to complete the operation.",
           );
         });
     });
