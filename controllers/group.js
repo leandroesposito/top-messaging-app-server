@@ -7,6 +7,7 @@ const {
   validateInviteCode,
   validateUserIsNotInGroup,
   validateUserIsInGroup,
+  validateUserIsMember,
 } = require("./input-validations");
 const groupDB = require("../db/group");
 
@@ -133,6 +134,28 @@ const getMembers = [
   },
 ];
 
+const banUser = [
+  authenticate,
+  validateGroupId(),
+  validateGroupOwnership(),
+  validateUserIsMember(),
+  checkValidations,
+  async function (req, res) {
+    const success = groupDB.deleteUserFromGroup(
+      req.locals.memberId,
+      req.locals.group.id,
+    );
+
+    if (success) {
+      res.status(200).json({
+        message: `User removed from group ${req.locals.group.name}`,
+      });
+    } else {
+      res.status(500).json({ errors: ["Error removing user from group"] });
+    }
+  },
+];
+
 module.exports = {
   createGroup,
   getGroups,
@@ -141,4 +164,5 @@ module.exports = {
   joinGroup,
   leaveGroup,
   getMembers,
+  banUser,
 };

@@ -435,5 +435,79 @@ describe("test group route", function () {
           });
       });
     });
+
+    describe("ban member", () => {
+      test("missing token", () => {
+        return request(app)
+          .delete(`/groups/3/members/1`)
+          .then((response) => {
+            expect(response.status).toEqual(401);
+            expect(response.body.errors[0]).toEqual("invalid token");
+          });
+      });
+
+      test("ban user from non existent group", () => {
+        return request(app)
+          .delete(`/groups/10/members/1`)
+          .set("Authorization", token2)
+          .then((response) => {
+            expect(response.status).toEqual(409);
+            expect(response.body.errors[0]).toEqual("Group not found");
+          });
+      });
+
+      test("ban user from group you don't own", () => {
+        return request(app)
+          .delete(`/groups/3/members/1`)
+          .set("Authorization", token2)
+          .then((response) => {
+            expect(response.body.errors[0]).toEqual(
+              `You have to be the owner to complete the operation.`,
+            );
+          });
+      });
+
+      test("ban user that is not part of the group", () => {
+        const name = "second group";
+        return request(app)
+          .delete(`/groups/2/members/1`)
+          .set("Authorization", token2)
+          .then((response) => {
+            expect(response.body.errors[0]).toEqual(
+              `User is not part of the group ${name}`,
+            );
+          });
+      });
+
+      test("ban user that doesn't exist", () => {
+        const name = "second group";
+        return request(app)
+          .delete(`/groups/2/members/10`)
+          .set("Authorization", token2)
+          .then((response) => {
+            expect(response.body.errors[0]).toEqual(
+              `User is not part of the group ${name}`,
+            );
+          });
+      });
+
+      test("ban user", async () => {
+        const name = "third group";
+        const banResponse = await request(app)
+          .delete(`/groups/3/members/2`)
+          .set("Authorization", token);
+
+        expect(banResponse.body.message).toEqual(
+          `User removed from group ${name}`,
+        );
+
+        return request(app)
+          .get(`/groups/3/members`)
+          .set("Authorization", token)
+          .then((response) => {
+            expect(response.body.members.length).toEqual(1);
+          });
+      });
+    });
   });
 });

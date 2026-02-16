@@ -148,6 +148,22 @@ function validateUserIsInGroup() {
   });
 }
 
+function validateUserIsMember() {
+  return param("userId").custom(async (value, { req }) => {
+    if (!req.locals) {
+      return false;
+    }
+
+    const isInGroup = await groupDB.userIsInGroup(value, req.locals.group.id);
+    if (!isInGroup) {
+      throw new Error(`User is not part of the group ${req.locals.group.name}`);
+    }
+
+    req.locals.memberId = value;
+    return true;
+  });
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
@@ -160,4 +176,5 @@ module.exports = {
   validateInviteCode,
   validateUserIsNotInGroup,
   validateUserIsInGroup,
+  validateUserIsMember,
 };
