@@ -164,6 +164,15 @@ function validateUserIsMember() {
   });
 }
 
+function validateMessage() {
+  return body("body")
+    .exists({ values: "falsy" })
+    .withMessage("body is required as message content")
+    .trim()
+    .isLength({ min: 1, max: 2000 })
+    .withMessage("body can't be empty and max length is 2000 characters");
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
@@ -177,4 +186,5 @@ module.exports = {
   validateUserIsNotInGroup,
   validateUserIsInGroup,
   validateUserIsMember,
+  validateMessage,
 };
