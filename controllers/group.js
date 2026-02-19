@@ -37,9 +37,9 @@ const getGroups = [
     res.status(200).json({
       groups: groups.map((group) => ({
         id: group.id,
-        inviteCode: group.invite_code,
         name: group.name,
-        description: group.description,
+        inviteCode: group.invite_code,
+        newMessages: group.new_messages,
       })),
     });
   },

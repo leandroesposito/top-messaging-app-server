@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS users_groups (
   user_id INT REFERENCES users (id) ON DELETE CASCADE,
   group_id INT REFERENCES groups (id) ON DELETE CASCADE,
   is_owner BOOLEAN DEFAULT false,
+  last_seen TIMESTAMP DEFAULT '2000-01-01',
   CONSTRAINT user_group PRIMARY KEY (user_id, group_id)
 );
 

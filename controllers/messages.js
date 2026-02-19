@@ -7,6 +7,7 @@ const {
   validateUserIsInGroup,
 } = require("./input-validations");
 const messagesDB = require("../db/messages");
+const groupDB = require("../db/group");
 
 const sendPrivateMessage = [
   authenticate,
@@ -41,6 +42,12 @@ const sendGroupMessage = [
       req.locals.group.id,
       new Date(),
       req.body.body,
+    );
+
+    await groupDB.updateUserGroupLastSeen(
+      req.user.id,
+      req.locals.group.id,
+      new Date(),
     );
 
     if (messageId) {
@@ -80,7 +87,11 @@ const getGroupChat = [
   checkValidations,
   async function (req, res) {
     const messages = await messagesDB.getGroupChat(req.locals.group.id);
-
+    await groupDB.updateUserGroupLastSeen(
+      req.user.id,
+      req.locals.group.id,
+      new Date(),
+    );
     res.status(200).json({
       messages: messages.map((message) => ({
         id: message.id,

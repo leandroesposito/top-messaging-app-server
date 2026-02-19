@@ -376,28 +376,38 @@ describe("test messages routes", function () {
     });
 
     test("get group messages", async () => {
+      const groupsResponseBeforeGet = await request(app)
+        .get(`/groups/`)
+        .set("Authorization", `bearer ${logins[1].accessToken}`);
+
+      expect(groupsResponseBeforeGet.body.groups[0].newMessages).toBe("1");
+      expect(groupsResponseBeforeGet.body.groups[1].newMessages).toBe("0");
+
       const firstUserResponse = await request(app)
         .get(`/groups/1/messages`)
-        .set("Authorization", `bearer ${logins[0].accessToken}`)
-        .type("form");
+        .set("Authorization", `bearer ${logins[0].accessToken}`);
       const secondUserResponse = await request(app)
         .get(`/groups/1/messages`)
-        .set("Authorization", `bearer ${logins[1].accessToken}`)
-        .type("form");
+        .set("Authorization", `bearer ${logins[1].accessToken}`);
       const thirdUserResponse = await request(app)
         .get(`/groups/1/messages`)
-        .set("Authorization", `bearer ${logins[2].accessToken}`)
-        .type("form");
+        .set("Authorization", `bearer ${logins[2].accessToken}`);
 
       expect(firstUserResponse.body).toEqual(secondUserResponse.body);
       expect(firstUserResponse.body).toEqual(thirdUserResponse.body);
 
       const referenceGroupResponse = await request(app)
         .get(`/groups/2/messages`)
-        .set("Authorization", `bearer ${logins[1].accessToken}`)
-        .type("form");
+        .set("Authorization", `bearer ${logins[1].accessToken}`);
 
       expect(referenceGroupResponse.body.messages).toEqual([]);
+
+      const groupsResponseAfterGet = await request(app)
+        .get(`/groups/`)
+        .set("Authorization", `bearer ${logins[1].accessToken}`);
+
+      expect(groupsResponseAfterGet.body.groups[0].newMessages).toBe("0");
+      expect(groupsResponseAfterGet.body.groups[1].newMessages).toBe("0");
     });
   });
 });

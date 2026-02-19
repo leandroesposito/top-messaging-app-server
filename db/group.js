@@ -53,15 +53,38 @@ async function userIsInGroup(uid, gid) {
 
 async function getUserGroups(uid) {
   const query = `
-    SELECT g.*
+    SELECT
+      g.id,
+      g.name,
+      g.invite_code,
+      (SELECT COUNT(*)
+        FROM group_messages gm
+        WHERE gm.group_id = g.id
+          AND gm.created_at > ug.last_seen) as new_messages,
+      (SELECT MAX(created_at)
+        FROM group_messages gm
+        WHERE gm.group_id = g.id) as last_message_time
     FROM groups g
     JOIN users_groups ug
     ON g.id = ug.group_id
-    WHERE ug.user_id = $1`;
+    WHERE ug.user_id = $1
+    ORDER BY new_messages DESC, last_message_time DESC nulls LAST;`;
+
   const params = [uid];
 
   const res = await runQuery(query, params);
   return res;
+}
+
+async function updateUserGroupLastSeen(uid, gid, lastSeen) {
+  const query = `
+    UPDATE users_groups
+    SET last_seen = $1
+    WHERE user_id = $2 AND group_id = $3
+  `;
+  const params = [lastSeen, uid, gid];
+
+  await runQuery(query, params);
 }
 
 async function getGroupInfo(gid) {
@@ -147,4 +170,5 @@ module.exports = {
   isOwner,
   getGroupMembersById,
   getGroupByInviteCode,
+  updateUserGroupLastSeen,
 };
