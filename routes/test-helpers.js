@@ -8,6 +8,12 @@ async function initDatabase() {
   return client.end();
 }
 
+async function runQuery(query, params = []) {
+  const result = await pool.query(query, params);
+
+  return result.rows;
+}
+
 function endPool() {
   return pool.end();
 }
@@ -22,4 +28,5 @@ module.exports = {
   initDatabase,
   endPool,
   delay,
+  runQuery,
 };
