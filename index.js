@@ -13,6 +13,12 @@ passport.use(jwtStratety);
 
 app.use("/api", indexRouter);
 
+app.use((err, req, res, next) => {
+  console.error(err);
+  console.error(err.stack);
+  res.status(500).send("500 Server error");
+});
+
 const PORT = process.env.SERVER_PORT || 3000;
 app.listen(PORT, (error) => {
   if (error) {
