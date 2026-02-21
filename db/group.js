@@ -61,7 +61,7 @@ async function getUserGroups(uid) {
         FROM group_messages gm
         WHERE gm.group_id = g.id
           AND gm.created_at > ug.last_seen) as new_messages,
-      (SELECT MAX(created_at)
+      (SELECT MAX(created_at AT TIME ZONE 'UTC')
         FROM group_messages gm
         WHERE gm.group_id = g.id) as last_message_time
     FROM groups g
