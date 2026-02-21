@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS users_groups;
 DROP TABLE IF EXISTS group_messages;
 DROP TABLE IF EXISTS friends;
 DROP TABLE IF EXISTS private_messages;
+DROP TABLE IF EXISTS last_seen_private_chat;
 DROP TABLE IF EXISTS profiles;
 DROP TABLE IF EXISTS groups;
 DROP TABLE IF EXISTS users;
@@ -21,6 +22,13 @@ CREATE TABLE IF NOT EXISTS friends (
   uid2 INT REFERENCES users (id) ON DELETE CASCADE,
   CONSTRAINT uuid1_lessthan_uuid2 CHECK (uid1 < uid2),
   CONSTRAINT uid1_uid2 PRIMARY KEY (uid1, uid2)
+);
+
+CREATE TABLE IF NOT EXISTS last_seen_private_chat (
+    uid1 INT REFERENCES users (id) ON DELETE CASCADE,
+    uid2 INT REFERENCES users (id) ON DELETE CASCADE,
+    last_seen TIMESTAMP DEFAULT '2000-01-01',
+    CONSTRAINT uid1_uid2_seen PRIMARY KEY (uid1, uid2)
 );
 
 CREATE TABLE IF NOT EXISTS profiles(
