@@ -1,9 +1,27 @@
+const { signUpRouter } = require("./sign-up");
+const { logInRouter } = require("./log-in");
+const { groupRouter } = require("./group");
+
+const request = require("supertest");
+const passport = require("passport");
+const jwtStratety = require("../auth/jwt-strategy");
+
+const express = require("express");
 const { initDatabase, endPool, runQuery } = require("./test-helpers");
+const app = express();
+
+app.use(express.urlencoded({ extended: true }));
+app.use("/sign-up", signUpRouter);
+app.use("/log-in", logInRouter);
+app.use("/groups", groupRouter);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+passport.use(jwtStratety);
 
 const populateQuery = `
   -- 1. First, insert users (including control user)
   INSERT INTO users (username, password, friend_code, is_online) VALUES
-  ('john_doe', 'hash123', 'JOHN123', true),      -- ID 1 (control user)
   ('mary_smith', 'hash456', 'MARY456', true),    -- ID 2
   ('peter_jones', 'hash789', 'PETER789', false), -- ID 3
   ('lisa_brown', 'hash101', 'LISA101', true),    -- ID 4
@@ -12,7 +30,6 @@ const populateQuery = `
 
   -- 2. Create profiles
   INSERT INTO profiles (user_id, public_name, description) VALUES
-  (1, 'John Doe', 'Control user'),
   (2, 'Mary Smith', 'Active member'),
   (3, 'Peter Jones', 'Occasional member'),
   (4, 'Lisa Brown', 'Group admin'),
@@ -78,35 +95,33 @@ const populateQuery = `
   (4, 4, '2026-02-19 11:00:00', 'What trail?');
 `;
 
-const getQuery = `
-  SELECT
-  g.id,
-  g.name,
-  g.invite_code,
-  (SELECT COUNT(*)
-    FROM group_messages gm
-    WHERE gm.group_id = g.id
-      AND gm.created_at > ug.last_seen) as new_messages,
-  (SELECT MAX(created_at AT TIME ZONE 'UTC')
-    FROM group_messages gm
-    WHERE gm.group_id = g.id) as last_message_time
-  FROM groups g
-  JOIN users_groups ug
-  ON g.id = ug.group_id
-  WHERE ug.user_id = $1
-  ORDER BY new_messages DESC, last_message_time DESC nulls LAST;
-`;
-
 describe("test get groups query", function () {
+  let login;
   beforeAll(async () => {
     await initDatabase();
+
+    await request(app).post("/sign-up").type("form").send({
+      username: "john_doe",
+      password: "hash1234",
+      "confirm-password": "hash1234",
+    });
+
+    login = await request(app).post("/log-in").type("form").send({
+      username: "john_doe",
+      password: "hash1234",
+    });
+
     await runQuery(populateQuery);
   });
   afterAll(endPool);
 
   describe("general get group query", () => {
     test("should return groups ordered by new messages and last message time", async () => {
-      const rows = await runQuery(getQuery, [1]);
+      const getGroupsResponse = await request(app)
+        .get(`/groups`)
+        .set("Authorization", "bearer " + login.body.accessToken);
+
+      const rows = getGroupsResponse.body.groups;
 
       // Test 1: Should return 3 groups (John is in groups 1, 2, 3 only)
       expect(rows).toHaveLength(3);
@@ -115,44 +130,48 @@ describe("test get groups query", function () {
       expect(rows[0]).toEqual({
         id: 1,
         name: "Family Group",
-        invite_code: "FAMILY123",
-        new_messages: "3",
-        last_message_time: new Date("2026-02-19T14:00:00.000Z"),
+        inviteCode: "FAMILY123",
+        newMessages: "3",
+        lastMessageTime: "2026-02-19T14:00:00.000Z",
       });
 
       // Test 3: Work Team should be SECOND (2 new messages)
       expect(rows[1]).toEqual({
         id: 2,
         name: "Work Team",
-        invite_code: "WORK456",
-        new_messages: "2",
-        last_message_time: new Date("2026-02-19T10:00:00.000Z"),
+        inviteCode: "WORK456",
+        newMessages: "2",
+        lastMessageTime: "2026-02-19T10:00:00.000Z",
       });
 
       // Test 4: Friend Circle should be THIRD (0 new messages)
       expect(rows[2]).toEqual({
         id: 3,
         name: "Friend Circle",
-        invite_code: "FRIENDS789",
-        new_messages: "0",
-        last_message_time: new Date("2026-02-18T18:30:00.000Z"),
+        inviteCode: "FRIENDS789",
+        newMessages: "0",
+        lastMessageTime: "2026-02-18T18:30:00.000Z",
       });
 
       // Test 5: Verify Hobby Club is NOT included (John not a member)
       const hobbyGroup = rows.find((row) => row.id === 4);
       expect(hobbyGroup).toBeUndefined();
 
-      // Test 6: Verify order by new_messages DESC
-      expect(parseInt(rows[0].new_messages)).toBe(3);
-      expect(parseInt(rows[1].new_messages)).toBe(2);
-      expect(parseInt(rows[2].new_messages)).toBe(0);
+      // Test 6: Verify order by newMessages DESC
+      expect(parseInt(rows[0].newMessages)).toBe(3);
+      expect(parseInt(rows[1].newMessages)).toBe(2);
+      expect(parseInt(rows[2].newMessages)).toBe(0);
     });
   });
 
   describe("Group chats detailed tests", () => {
     let rows;
     beforeAll(async () => {
-      rows = await runQuery(getQuery, [1]);
+      const getGroupsResponse = await request(app)
+        .get(`/groups`)
+        .set("Authorization", "bearer " + login.body.accessToken);
+
+      rows = getGroupsResponse.body.groups;
     });
 
     test("should return correct number of groups", () => {
@@ -163,20 +182,20 @@ describe("test get groups query", function () {
       const workTeam = rows[1];
       expect(workTeam.id).toBe(2);
       expect(workTeam.name).toBe("Work Team");
-      expect(workTeam.invite_code).toBe("WORK456");
-      expect(parseInt(workTeam.new_messages)).toBe(2);
+      expect(workTeam.inviteCode).toBe("WORK456");
+      expect(parseInt(workTeam.newMessages)).toBe(2);
 
       // Verify new messages count matches
       const lastSeen = "2026-02-19T09:00:00.000Z"; // John's last_seen for Work Team
       const messagesAfter =
-        new Date(workTeam.last_message_time) > new Date(lastSeen);
+        new Date(workTeam.lastMessageTime) > new Date(lastSeen);
       expect(messagesAfter).toBe(true);
     });
 
     test("Family Group should have correct new messages count", () => {
       const familyGroup = rows[0];
       expect(familyGroup.id).toBe(1);
-      expect(parseInt(familyGroup.new_messages)).toBe(3);
+      expect(parseInt(familyGroup.newMessages)).toBe(3);
 
       // Verify the new message is from Mary at 14:00
       const messages = [{ time: "2026-02-19T14:00:00.000Z", sender: "Mary" }];
@@ -190,13 +209,11 @@ describe("test get groups query", function () {
     test("Friend Circle should have zero new messages", () => {
       const friendCircle = rows[2];
       expect(friendCircle.id).toBe(3);
-      expect(parseInt(friendCircle.new_messages)).toBe(0);
+      expect(parseInt(friendCircle.newMessages)).toBe(0);
 
       // Verify all messages are before John's last_seen
       const lastSeen = "2026-02-19T12:00:00.000Z"; // John's last_seen for Friend Circle
-      expect(new Date(rows[2].last_message_time) < new Date(lastSeen)).toBe(
-        true,
-      );
+      expect(new Date(rows[2].lastMessageTime) < new Date(lastSeen)).toBe(true);
     });
 
     test("Hobby Club should not be in results", () => {
@@ -208,14 +225,14 @@ describe("test get groups query", function () {
       rows.forEach((group) => {
         expect(group).toHaveProperty("id");
         expect(group).toHaveProperty("name");
-        expect(group).toHaveProperty("invite_code");
-        expect(group).toHaveProperty("new_messages");
-        expect(group).toHaveProperty("last_message_time");
+        expect(group).toHaveProperty("inviteCode");
+        expect(group).toHaveProperty("newMessages");
+        expect(group).toHaveProperty("lastMessageTime");
 
         expect(typeof group.id).toBe("number");
         expect(typeof group.name).toBe("string");
-        expect(typeof group.invite_code).toBe("string");
-        expect(group.last_message_time).toBeDefined();
+        expect(typeof group.inviteCode).toBe("string");
+        expect(group.lastMessageTime).toBeDefined();
       });
     });
   });

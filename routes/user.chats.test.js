@@ -1,16 +1,33 @@
+const { signUpRouter } = require("./sign-up");
+const { logInRouter } = require("./log-in");
+const { messagesRouter } = require("./messages");
+
+const request = require("supertest");
+const passport = require("passport");
+const jwtStratety = require("../auth/jwt-strategy");
+
+const express = require("express");
 const { initDatabase, endPool, runQuery } = require("./test-helpers");
+const app = express();
+
+app.use(express.urlencoded({ extended: true }));
+app.use("/sign-up", signUpRouter);
+app.use("/log-in", logInRouter);
+app.use("/messages", messagesRouter);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+passport.use(jwtStratety);
 
 const populateQuery = `
  -- 1. First, insert users (main user is ID 1)
   INSERT INTO users (username, password, friend_code, is_online) VALUES
-  ('john_doe', 'hash123', 'JOHN123', true),      -- ID 1 (main user)
   ('mary_smith', 'hash456', 'MARY456', true),    -- ID 2
   ('peter_jones', 'hash789', 'PETER789', false), -- ID 3
   ('lisa_brown', 'hash101', 'LISA101', true);    -- ID 4
 
   -- 2. Create profiles for everyone
   INSERT INTO profiles (user_id, public_name, description) VALUES
-  (1, 'John Doe', 'Main user'),
   (2, 'Mary Smith', 'Best friend'),
   (3, 'Peter Jones', 'Work colleague'),
   (4, 'Lisa Brown', 'Childhood friend');
@@ -47,80 +64,71 @@ const populateQuery = `
   (1, 4, '2026-02-10 20:00:00'); -- Saw everything with Lisa
 `;
 
-const getQuery = `
-  SELECT
-      u.id,
-      p.public_name,
-      u.is_online,
-      MAX(pm.created_at)  AT TIME ZONE 'UTC' as last_message_time,
-      COALESCE((
-          SELECT COUNT(*)
-          FROM private_messages pm2
-          LEFT JOIN last_seen_private_chat ls
-              ON ls.uid1 = $1 AND ls.uid2 = pm2.sender_user_id
-          WHERE pm2.receiver_user_id = $1
-              AND pm2.sender_user_id = u.id
-              AND pm2.created_at > COALESCE(ls.last_seen, '2000-01-01')
-      ), 0) as unread_count
-  FROM users u
-  JOIN profiles p ON u.id = p.user_id
-  LEFT JOIN friends f ON (u.id = f.uid1 AND f.uid2 = $1) OR (u.id = f.uid2 AND f.uid1 = $1)
-  LEFT JOIN private_messages pm ON
-      (pm.sender_user_id = u.id AND pm.receiver_user_id = $1) OR
-      (pm.receiver_user_id = u.id AND pm.sender_user_id = $1)
-  WHERE (f.uid1 IS NOT NULL OR pm.id IS NOT NULL) AND u.id != $1
-  GROUP BY u.id, p.public_name, u.is_online
-  ORDER BY MAX(pm.created_at) DESC NULLS LAST, unread_count DESC NULLS LAST;
-`;
-
 describe("test users route", function () {
+  let login;
   beforeAll(async () => {
     await initDatabase();
+
+    await request(app).post("/sign-up").type("form").send({
+      username: "john_doe",
+      password: "hash1234",
+      "confirm-password": "hash1234",
+    });
+
+    login = await request(app).post("/log-in").type("form").send({
+      username: "john_doe",
+      password: "hash1234",
+    });
+
     await runQuery(populateQuery);
   });
   afterAll(endPool);
 
   test("validate query result", async () => {
-    const rows = await runQuery(getQuery, [1]);
+    const getPrivateChatsResponse = await request(app)
+      .get(`/messages`)
+      .set("Authorization", "bearer " + login.body.accessToken);
+
+    const rows = getPrivateChatsResponse.body.privateChats;
 
     expect(rows).toHaveLength(3);
 
     expect(rows[0]).toEqual({
       id: 3,
-      public_name: "Peter Jones",
-      is_online: false,
-      last_message_time: new Date("2026-02-19T14:05:00.000Z"),
-      unread_count: "1",
+      publicName: "Peter Jones",
+      isOnline: false,
+      lastMessageTime: "2026-02-19T14:05:00.000Z",
+      unreadCount: "1",
     });
 
     expect(rows[1]).toEqual({
       id: 2,
-      public_name: "Mary Smith",
-      is_online: true,
-      last_message_time: new Date("2026-02-19T09:15:00.000Z"),
-      unread_count: "0",
+      publicName: "Mary Smith",
+      isOnline: true,
+      lastMessageTime: "2026-02-19T09:15:00.000Z",
+      unreadCount: "0",
     });
 
     //
     expect(rows[2]).toEqual({
       id: 4,
-      public_name: "Lisa Brown",
-      is_online: true,
-      last_message_time: new Date("2026-02-10T19:00:00.000Z"),
-      unread_count: "0",
+      publicName: "Lisa Brown",
+      isOnline: true,
+      lastMessageTime: "2026-02-10T19:00:00.000Z",
+      unreadCount: "0",
     });
 
-    expect(rows[0].unread_count).toBe("1");
+    expect(rows[0].unreadCount).toBe("1");
 
-    expect(rows[1].last_message_time).toBeDefined();
-    expect(rows[1].last_message_time).not.toBeNull();
+    expect(rows[1].lastMessageTime).toBeDefined();
+    expect(rows[1].lastMessageTime).not.toBeNull();
 
     rows.forEach((row) => {
       expect(typeof row.id).toBe("number");
-      expect(typeof row.public_name).toBe("string");
-      expect(typeof row.is_online).toBe("boolean");
-      expect(row.last_message_time).toBeDefined();
-      expect(row.unread_count).toBeDefined();
+      expect(typeof row.publicName).toBe("string");
+      expect(typeof row.isOnline).toBe("boolean");
+      expect(row.lastMessageTime).toBeDefined();
+      expect(row.unreadCount).toBeDefined();
     });
 
     const expectedIds = [3, 2, 4];
