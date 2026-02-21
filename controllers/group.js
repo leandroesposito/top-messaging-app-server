@@ -40,6 +40,7 @@ const getGroups = [
         name: group.name,
         inviteCode: group.invite_code,
         newMessages: group.new_messages,
+        lastMessageTime: group.last_message_time,
       })),
     });
   },
