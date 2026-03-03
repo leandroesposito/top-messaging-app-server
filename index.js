@@ -3,11 +3,13 @@ const express = require("express");
 const { indexRouter } = require("./routes");
 const passport = require("passport");
 const jwtStratety = require("./auth/jwt-strategy");
+const cors = require("cors");
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 passport.use(jwtStratety);
 
