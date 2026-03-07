@@ -95,7 +95,7 @@ describe("test users route", function () {
 
     expect(rows[0]).toEqual({
       id: 3,
-      publicName: "Peter Jones",
+      name: "Peter Jones",
       isOnline: false,
       lastMessageTime: "2026-02-19T14:05:00.000Z",
       unreadCount: "1",
@@ -103,7 +103,7 @@ describe("test users route", function () {
 
     expect(rows[1]).toEqual({
       id: 2,
-      publicName: "Mary Smith",
+      name: "Mary Smith",
       isOnline: true,
       lastMessageTime: "2026-02-19T09:15:00.000Z",
       unreadCount: "0",
@@ -112,7 +112,7 @@ describe("test users route", function () {
     //
     expect(rows[2]).toEqual({
       id: 4,
-      publicName: "Lisa Brown",
+      name: "Lisa Brown",
       isOnline: true,
       lastMessageTime: "2026-02-10T19:00:00.000Z",
       unreadCount: "0",
@@ -125,7 +125,7 @@ describe("test users route", function () {
 
     rows.forEach((row) => {
       expect(typeof row.id).toBe("number");
-      expect(typeof row.publicName).toBe("string");
+      expect(typeof row.name).toBe("string");
       expect(typeof row.isOnline).toBe("boolean");
       expect(row.lastMessageTime).toBeDefined();
       expect(row.unreadCount).toBeDefined();

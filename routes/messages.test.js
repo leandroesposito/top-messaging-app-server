@@ -180,10 +180,10 @@ describe("test messages routes", function () {
           expect(response.body.messages.length).toEqual(4);
           expect(response.body.messages[0].userId).toEqual(logins[1].id);
           expect(response.body.messages[0].body).toEqual("1");
-          expect(response.body.messages[0].publicName).toEqual("user2");
+          expect(response.body.messages[0].name).toEqual("user2");
           expect(response.body.messages[1].userId).toEqual(logins[2].id);
           expect(response.body.messages[1].body).toEqual("2");
-          expect(response.body.messages[1].publicName).toEqual("user3");
+          expect(response.body.messages[1].name).toEqual("user3");
           expect(response.body.messages[2].userId).toEqual(logins[1].id);
           expect(response.body.messages[2].body).toEqual("3");
           expect(response.body.messages[3].userId).toEqual(logins[2].id);

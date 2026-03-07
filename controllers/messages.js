@@ -84,7 +84,7 @@ const getPrivateChat = [
       messages: messages.map((message) => ({
         id: message.id,
         userId: message.sender_user_id,
-        publicName: message.public_name,
+        name: message.public_name,
         body: message.body,
         createdAt: message.created_at,
       })),
@@ -108,7 +108,7 @@ const getGroupChat = [
       messages: messages.map((message) => ({
         id: message.id,
         userId: message.sender_user_id,
-        publicName: message.public_name,
+        name: message.public_name,
         body: message.body,
         createdAt: message.created_at,
       })),
@@ -123,7 +123,7 @@ const getPrivateChats = [
     res.status(200).json({
       privateChats: privateChats.map((pc) => ({
         id: pc.id,
-        publicName: pc.public_name,
+        name: pc.public_name,
         isOnline: pc.is_online,
         lastMessageTime: pc.last_message_time,
         unreadCount: pc.unread_count,
