@@ -155,7 +155,7 @@ describe("test group route", function () {
           expect(response.body.groups).toBeDefined();
           expect(response.body.groups.length).toEqual(1);
           expect(response.body.groups[0].name).toEqual("the name");
-          expect(response.body.groups[0].newMessages).toBeDefined();
+          expect(response.body.groups[0].unreadCount).toBeDefined();
           expect(response.body.groups[0].id).toBeDefined();
         });
     });

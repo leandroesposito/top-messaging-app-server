@@ -60,7 +60,7 @@ async function getUserGroups(uid) {
       (SELECT COUNT(*)
         FROM group_messages gm
         WHERE gm.group_id = g.id
-          AND gm.created_at > ug.last_seen) as new_messages,
+          AND gm.created_at > ug.last_seen) as unread_count,
       (SELECT MAX(created_at AT TIME ZONE 'UTC')
         FROM group_messages gm
         WHERE gm.group_id = g.id) as last_message_time
@@ -68,7 +68,7 @@ async function getUserGroups(uid) {
     JOIN users_groups ug
     ON g.id = ug.group_id
     WHERE ug.user_id = $1
-    ORDER BY new_messages DESC, last_message_time DESC nulls LAST;`;
+    ORDER BY unread_count DESC, last_message_time DESC nulls LAST;`;
 
   const params = [uid];
 

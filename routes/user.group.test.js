@@ -131,7 +131,7 @@ describe("test get groups query", function () {
         id: 1,
         name: "Family Group",
         inviteCode: "FAMILY123",
-        newMessages: "3",
+        unreadCount: "3",
         lastMessageTime: "2026-02-19T14:00:00.000Z",
       });
 
@@ -140,7 +140,7 @@ describe("test get groups query", function () {
         id: 2,
         name: "Work Team",
         inviteCode: "WORK456",
-        newMessages: "2",
+        unreadCount: "2",
         lastMessageTime: "2026-02-19T10:00:00.000Z",
       });
 
@@ -149,7 +149,7 @@ describe("test get groups query", function () {
         id: 3,
         name: "Friend Circle",
         inviteCode: "FRIENDS789",
-        newMessages: "0",
+        unreadCount: "0",
         lastMessageTime: "2026-02-18T18:30:00.000Z",
       });
 
@@ -157,10 +157,10 @@ describe("test get groups query", function () {
       const hobbyGroup = rows.find((row) => row.id === 4);
       expect(hobbyGroup).toBeUndefined();
 
-      // Test 6: Verify order by newMessages DESC
-      expect(parseInt(rows[0].newMessages)).toBe(3);
-      expect(parseInt(rows[1].newMessages)).toBe(2);
-      expect(parseInt(rows[2].newMessages)).toBe(0);
+      // Test 6: Verify order by unreadCount DESC
+      expect(parseInt(rows[0].unreadCount)).toBe(3);
+      expect(parseInt(rows[1].unreadCount)).toBe(2);
+      expect(parseInt(rows[2].unreadCount)).toBe(0);
     });
   });
 
@@ -183,7 +183,7 @@ describe("test get groups query", function () {
       expect(workTeam.id).toBe(2);
       expect(workTeam.name).toBe("Work Team");
       expect(workTeam.inviteCode).toBe("WORK456");
-      expect(parseInt(workTeam.newMessages)).toBe(2);
+      expect(parseInt(workTeam.unreadCount)).toBe(2);
 
       // Verify new messages count matches
       const lastSeen = "2026-02-19T09:00:00.000Z"; // John's last_seen for Work Team
@@ -195,21 +195,21 @@ describe("test get groups query", function () {
     test("Family Group should have correct new messages count", () => {
       const familyGroup = rows[0];
       expect(familyGroup.id).toBe(1);
-      expect(parseInt(familyGroup.newMessages)).toBe(3);
+      expect(parseInt(familyGroup.unreadCount)).toBe(3);
 
       // Verify the new message is from Mary at 14:00
       const messages = [{ time: "2026-02-19T14:00:00.000Z", sender: "Mary" }];
       const lastSeen = "2026-02-18T20:00:00.000Z"; // John's last_seen
-      const newMessages = messages.filter(
+      const unreadCount = messages.filter(
         (m) => new Date(m.time) > new Date(lastSeen),
       );
-      expect(newMessages).toHaveLength(1);
+      expect(unreadCount).toHaveLength(1);
     });
 
     test("Friend Circle should have zero new messages", () => {
       const friendCircle = rows[2];
       expect(friendCircle.id).toBe(3);
-      expect(parseInt(friendCircle.newMessages)).toBe(0);
+      expect(parseInt(friendCircle.unreadCount)).toBe(0);
 
       // Verify all messages are before John's last_seen
       const lastSeen = "2026-02-19T12:00:00.000Z"; // John's last_seen for Friend Circle
@@ -226,7 +226,7 @@ describe("test get groups query", function () {
         expect(group).toHaveProperty("id");
         expect(group).toHaveProperty("name");
         expect(group).toHaveProperty("inviteCode");
-        expect(group).toHaveProperty("newMessages");
+        expect(group).toHaveProperty("unreadCount");
         expect(group).toHaveProperty("lastMessageTime");
 
         expect(typeof group.id).toBe("number");
