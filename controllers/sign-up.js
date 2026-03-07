@@ -16,6 +16,9 @@ function validateUser() {
         "Username must be between 4 and 10 characters both inclusive",
       )
       .custom(async (value) => {
+        if (!value) {
+          return false;
+        }
         if (await userDB.usernameExists(value)) {
           throw new Error(`Username ${value} is used!`);
         }
