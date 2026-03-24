@@ -92,6 +92,16 @@ async function getUserFriendsById(id) {
   return res;
 }
 
+async function setOnlineStatus(id, status) {
+  const query = `
+    UPDATE users SET is_online = $1 WHERE id=$2;
+  `;
+  const params = [status, id];
+
+  await runQuery(query, params);
+  return true;
+}
+
 module.exports = {
   createUser,
   usernameExists,
@@ -99,4 +109,5 @@ module.exports = {
   getUserById,
   getUserFriendsById,
   getUserByFriendCode,
+  setOnlineStatus,
 };
