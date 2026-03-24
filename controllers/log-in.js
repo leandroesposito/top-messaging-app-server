@@ -49,6 +49,7 @@ const logIn = [
       refreshToken,
       friendCode: user.friend_code,
       publicName: user.public_name,
+      message: `Welcome back ${user.public_name}`,
     });
   },
 ];
