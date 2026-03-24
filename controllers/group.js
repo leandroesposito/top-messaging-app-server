@@ -80,6 +80,29 @@ const deleteGroup = [
   },
 ];
 
+const modifyGroup = [
+  authenticate,
+  validateGroupId(),
+  validateGroupOwnership(),
+  validateGroupName(),
+  checkValidations,
+  async function (req, res) {
+    const { name, description } = req.body;
+
+    const modified = await groupDB.updateGroupById(
+      req.locals.group.id,
+      name,
+      description,
+    );
+
+    if (modified) {
+      res
+        .status(200)
+        .json({ message: "Group updated succesfully", success: true });
+    }
+  },
+];
+
 const joinGroup = [
   authenticate,
   validateInviteCode(),
@@ -164,6 +187,7 @@ module.exports = {
   createGroup,
   getGroups,
   getGroupInfo,
+  modifyGroup,
   deleteGroup,
   joinGroup,
   leaveGroup,

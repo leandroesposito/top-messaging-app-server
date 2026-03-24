@@ -12,6 +12,7 @@ groupRouter.post("/:groupId/messages", messagesController.sendGroupMessage);
 groupRouter.get("/:groupId/messages", messagesController.getGroupChat);
 groupRouter.get("/:groupId", groupController.getGroupInfo);
 groupRouter.delete("/:groupId", groupController.deleteGroup);
+groupRouter.put("/:groupId", groupController.modifyGroup);
 groupRouter.post("/", groupController.createGroup);
 groupRouter.get("/", groupController.getGroups);
 

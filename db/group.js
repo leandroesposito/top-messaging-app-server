@@ -38,6 +38,18 @@ async function joinGroup(uid, gid, isOwner = false) {
   return true;
 }
 
+async function updateGroupById(groupId, name, description) {
+  const query = `
+    UPDATE groups
+      SET name = $2, description = $3
+      WHERE id = $1;
+  `;
+  const params = [groupId, name, description];
+
+  await runQuery(query, params);
+  return true;
+}
+
 async function userIsInGroup(uid, gid) {
   const query = `
     SELECT *
@@ -164,6 +176,7 @@ async function deleteGroup(gid) {
 
 module.exports = {
   createGroup,
+  updateGroupById,
   joinGroup,
   userIsInGroup,
   getUserGroups,
