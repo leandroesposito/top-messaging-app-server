@@ -3,6 +3,9 @@ const { logInRouter } = require("./log-in");
 const { refreshRouter } = require("./refresh");
 const { logOutRouter } = require("./log-out");
 
+const passport = require("passport");
+const jwtStratety = require("../auth/jwt-strategy");
+
 const request = require("supertest");
 const express = require("express");
 const { initDatabase, endPool, delay } = require("./test-helpers");
@@ -14,24 +17,35 @@ app.use("/log-in", logInRouter);
 app.use("/refresh", refreshRouter);
 app.use("/log-out", logOutRouter);
 
+passport.use(jwtStratety);
+
 describe("test log out route", function () {
+  const logins = [];
   beforeAll(async () => {
     await initDatabase();
-    await request(app).post("/sign-up").type("form").send({
-      username: "user1",
-      password: "password1",
-      "confirm-password": "password1",
-    });
-    await request(app).post("/sign-up").type("form").send({
-      username: "user2",
-      password: "password2",
-      "confirm-password": "password2",
-    });
-    await request(app).post("/sign-up").type("form").send({
-      username: "user3",
-      password: "password3",
-      "confirm-password": "password3",
-    });
+    for (let i = 0; i < 3; i++) {
+      await request(app)
+        .post("/sign-up")
+        .type("form")
+        .send({
+          username: `user${i}`,
+          password: `password${i}`,
+          "confirm-password": `password${i}`,
+        });
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const loginresponse = await request(app)
+        .post("/log-in")
+        .type("form")
+        .send({
+          username: `user${i}`,
+          password: `password${i}`,
+          "confirm-password": `password${i}`,
+        });
+
+      logins.push(loginresponse.body);
+    }
   });
   afterAll(endPool);
 
@@ -39,6 +53,7 @@ describe("test log out route", function () {
     test("missing refresh token", (done) => {
       request(app)
         .post("/log-out")
+        .set("Authorization", `Bearer ${logins[0].accessToken}`)
         .type("form")
         .send({})
         .then((response) => {
@@ -53,6 +68,7 @@ describe("test log out route", function () {
     test("empty refresh token", (done) => {
       request(app)
         .post("/log-out")
+        .set("Authorization", `Bearer ${logins[0].accessToken}`)
         .type("form")
         .send({
           refreshToken: "",
@@ -62,22 +78,16 @@ describe("test log out route", function () {
           expect(response.body.errors[0]).toEqual(
             "refreshToken must be provided!",
           );
+          done();
         });
-      done();
     });
 
     test("incorrect token type", async () => {
-      const login = await request(app).post("/log-in").type("form").send({
-        username: "user1",
-        password: "password1",
-      });
-
-      const { accessToken } = login.body;
-
       const incorrectTokenResponse = await request(app)
         .post("/log-out")
+        .set("Authorization", `Bearer ${logins[0].accessToken}`)
         .type("form")
-        .send({ refreshToken: accessToken });
+        .send({ refreshToken: logins[0].accessToken });
 
       expect(incorrectTokenResponse.status).toEqual(409);
       expect(incorrectTokenResponse.body.errors[0]).toEqual(
@@ -87,17 +97,11 @@ describe("test log out route", function () {
   });
 
   test("log-out works", async () => {
-    const login = await request(app).post("/log-in").type("form").send({
-      username: "user2",
-      password: "password2",
-    });
-
-    const { refreshToken } = login.body;
-
     const correctResponse = await request(app)
       .post("/log-out")
+      .set("Authorization", `Bearer ${logins[1].accessToken}`)
       .type("form")
-      .send({ refreshToken: refreshToken });
+      .send({ refreshToken: logins[1].refreshToken });
 
     expect(correctResponse.status).toEqual(200);
     expect(correctResponse.body.message).toEqual("You log out successfuly!");
@@ -105,16 +109,17 @@ describe("test log out route", function () {
 
   test("refresh doesn't work after log out", async () => {
     // delays added to generate different tokens
+    await delay(1000);
     const login1 = await request(app).post("/log-in").type("form").send({
-      username: "user3",
-      password: "password3",
+      username: "user2",
+      password: "password2",
     });
 
     await delay(1000);
 
     const login2 = await request(app).post("/log-in").type("form").send({
-      username: "user3",
-      password: "password3",
+      username: "user2",
+      password: "password2",
     });
 
     const refreshToken1 = login1.body.refreshToken;
@@ -122,6 +127,7 @@ describe("test log out route", function () {
 
     const logOutResponse = await request(app)
       .post("/log-out")
+      .set("Authorization", `Bearer ${login1.body.accessToken}`)
       .type("form")
       .send({ refreshToken: refreshToken1 });
     expect(logOutResponse.status).toEqual(200);
