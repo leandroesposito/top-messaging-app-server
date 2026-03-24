@@ -1,16 +1,44 @@
+const bcrypt = require("bcryptjs");
+
+const passwords = [
+  "palice123",
+  "pbobsmith",
+  "pcharlie99",
+  "pdiana_r",
+  "pevan_tech",
+  "pfiona_g",
+  "pgeorge_m",
+  "phannah_b",
+  "pian_coder",
+  "pjulia_d",
+];
+
+const hashedPasswords = [
+  "$2b$10$6knqmuiWErv45iIBPr.fced4ZofonLDM9aDjA7mcQv7KKCHGLl3cS",
+  "$2b$10$2M4WhUv5cqY4lQFyoIVBReo5XDx0jujU0IvFytPxf.dAN/a78w5va",
+  "$2b$10$h69WYcUik.keingq2p7pnuhysfbYGCzm4nltjd4Jki5PxwuGpst4O",
+  "$2b$10$voQDIWUjMu7b7NXGc8hk2.0nVaBvDBIM6k8B82q9BKU1//l6ZGyA2",
+  "$2b$10$J8u2iG4Bu1vVYasIkIGKrOx75qU2VCaGdrsYLJNXyZP6ASucM3Uom",
+  "$2b$10$336pgcfhqJdwHagYZ3gP4OosfuR/I1IqPBN0Al9OtbavTgy/geRRW",
+  "$2b$10$koQcMlTnXVFEG62tgpAOU.rKw6VWvfgwuXABoDHIOrhi9nAuMPG4O",
+  "$2b$10$PvYPjmV2AHlo9n6CJBLPIuoCS.ZRFoxRLoNiBASVFr4hYVkzKx6SO",
+  "$2b$10$7XKrnVidQZBnUoyhwPyqOu0Gl1AigyS65IMxPoKgxw.GXrqhkatWK",
+  "$2b$10$9IjRBIs6xoZNx.rxxYPGy.rWYjoF1TL.pZJ4BYBiPU3r6WJXMsoi2",
+];
+
 const query = `
 -- Insert 10 users
 INSERT INTO users (username, password, friend_code, is_online) VALUES
-('alice123', 'hashed_password_1', 'ALICE123', true),
-('bobsmith', 'hashed_password_2', 'BOBSMITH', false),
-('charlie99', 'hashed_password_3', 'CHARLIE9', true),
-('diana_r', 'hashed_password_4', 'DIANAR', false),
-('evan_tech', 'hashed_password_5', 'EVANTECH', true),
-('fiona_g', 'hashed_password_6', 'FIONAG', true),
-('george_m', 'hashed_password_7', 'GEORGEM', false),
-('hannah_b', 'hashed_password_8', 'HANNAHB', true),
-('ian_coder', 'hashed_password_9', 'IANCODER', false),
-('julia_d', 'hashed_password_10', 'JULIAD', true);
+('alice123', '${hashedPasswords[0]}', 'ALICE123', true),
+('bobsmith', '${hashedPasswords[1]}', 'BOBSMITH', false),
+('charlie99', '${hashedPasswords[2]}', 'CHARLIE9', true),
+('diana_r', '${hashedPasswords[3]}', 'DIANAR', false),
+('evan_tech', '${hashedPasswords[4]}', 'EVANTECH', true),
+('fiona_g', '${hashedPasswords[5]}', 'FIONAG', true),
+('george_m', '${hashedPasswords[6]}', 'GEORGEM', false),
+('hannah_b', '${hashedPasswords[7]}', 'HANNAHB', true),
+('ian_coder', '${hashedPasswords[8]}', 'IANCODER', false),
+('julia_d', '${hashedPasswords[9]}', 'JULIAD', true);
 
 -- Insert user profiles
 INSERT INTO profiles (user_id, public_name, description) VALUES
