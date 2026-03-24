@@ -52,7 +52,9 @@ const signUp = [
     const newProfileId = await profileDB.createProfile(newUserId, username, "");
 
     if (newUserId && newProfileId) {
-      res.status(200).json({ message: "User created succesfuly" });
+      res
+        .status(200)
+        .json({ message: "User created succesfuly", success: true });
     } else {
       res.status(500).json({ errors: ["Error creating user"] });
     }

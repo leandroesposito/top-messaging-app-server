@@ -12,7 +12,9 @@ const logOut = [
 
     await refreshTokenDB.deleteRefreshToken(oldToken);
 
-    res.status(200).json({ message: "You log out successfuly!" });
+    res
+      .status(200)
+      .json({ message: "You log out successfuly!", success: true });
   },
 ];
 
