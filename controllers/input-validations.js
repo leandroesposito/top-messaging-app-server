@@ -122,6 +122,10 @@ function validateInviteCode() {
 
 function validateUserIsNotInGroup() {
   return param().custom(async (value, { req }) => {
+    if (!req.locals || !req.locals.group) {
+      return false;
+    }
+
     const isInGroup = await groupDB.userIsInGroup(
       req.user.id,
       req.locals.group.id,
@@ -136,6 +140,10 @@ function validateUserIsNotInGroup() {
 
 function validateUserIsInGroup() {
   return param().custom(async (value, { req }) => {
+    if (!req.locals || !req.locals.group) {
+      return false;
+    }
+
     const isInGroup = await groupDB.userIsInGroup(
       req.user.id,
       req.locals.group.id,
