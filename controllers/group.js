@@ -49,6 +49,7 @@ const getGroups = [
 const getGroupInfo = [
   authenticate,
   validateGroupId(),
+  validateUserIsInGroup(),
   checkValidations,
   async function (req, res) {
     const group = {
