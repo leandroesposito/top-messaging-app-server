@@ -57,6 +57,7 @@ const getGroupInfo = [
       inviteCode: req.locals.group.invite_code,
       name: req.locals.group.name,
       description: req.locals.group.description,
+      ownerId: req.locals.group.owner_id,
     };
     res.status(200).json({ group });
   },
