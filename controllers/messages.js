@@ -15,6 +15,20 @@ const sendPrivateMessage = [
   validateMessage(),
   checkValidations,
   async function (req, res) {
+    const permission = await messagesDB.checkMessagePermission(
+      req.user.id,
+      req.locals.userId,
+    );
+
+    if (permission.blocked) {
+      return res.status(403).json({
+        permission: false,
+        errors: [
+          "You've already sent a message to this user. Add them as a friend to keep chatting.",
+        ],
+      });
+    }
+
     const messageId = await messagesDB.sendPrivateMessage(
       req.user.id,
       req.locals.userId,
@@ -69,6 +83,11 @@ const getPrivateChat = [
   validateUserId(),
   checkValidations,
   async function (req, res) {
+    const permission = await messagesDB.checkMessagePermission(
+      req.user.id,
+      req.locals.userId,
+    );
+
     const messages = await messagesDB.getPrivateChat(
       req.user.id,
       req.locals.userId,
@@ -80,7 +99,7 @@ const getPrivateChat = [
       new Date(),
     );
 
-    res.status(200).json({
+    const response = {
       messages: messages.map((message) => ({
         id: message.id,
         userId: message.sender_user_id,
@@ -88,7 +107,19 @@ const getPrivateChat = [
         body: message.body,
         createdAt: message.created_at,
       })),
-    });
+    };
+
+    if (permission.firstMessage) {
+      response.permission = false;
+      response.message =
+        "Not friends yet. You can only send one message inviting them to be friends, share your friend code or ask for theirs.";
+    } else if (permission.blocked) {
+      response.permission = false;
+      response.message =
+        "You can't send more messages to this user. Add them as a friend to keep chatting.";
+    }
+
+    res.status(200).json(response);
   },
 ];
 

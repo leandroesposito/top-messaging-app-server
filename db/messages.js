@@ -109,6 +109,49 @@ async function updatePrivateChatLastSeen(uid1, uid2, lastSeen) {
   await runQuery(query, params);
 }
 
+async function checkMessagePermission(sender_user_id, receiver_user_id) {
+  if (sender_user_id === receiver_user_id) {
+    return { friends: true };
+  }
+
+  const [lower, higher] =
+    parseInt(sender_user_id) < parseInt(receiver_user_id)
+      ? [sender_user_id, receiver_user_id]
+      : [receiver_user_id, sender_user_id];
+
+  const query = `
+    SELECT
+      CASE
+        WHEN EXISTS(
+          SELECT 1 FROM friends
+          WHERE uid1 = $1 AND uid2 = $2
+        ) THEN 'friends'
+
+        WHEN NOT EXISTS(
+          SELECT 1 FROM private_messages
+          WHERE sender_user_id = $3 AND receiver_user_id = $4
+        ) THEN 'first_message'
+
+        ELSE 'blocked'
+      END AS permission_status;
+  `;
+  const params = [lower, higher, sender_user_id, receiver_user_id];
+
+  const result = await runQuery(query, params);
+
+  const permissionStatus = result[0].permission_status;
+
+  if (permissionStatus === "friends") {
+    return { friends: true };
+  }
+  if (permissionStatus === "first_message") {
+    return { firstMessage: true };
+  }
+  if (permissionStatus === "blocked") {
+    return { blocked: true };
+  }
+}
+
 module.exports = {
   sendPrivateMessage,
   sendGroupMessage,
@@ -116,4 +159,5 @@ module.exports = {
   getGroupChat,
   getPrivateChats,
   updatePrivateChatLastSeen,
+  checkMessagePermission,
 };
