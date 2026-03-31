@@ -5,6 +5,10 @@ const {
   validateMessage,
   validateGroupId,
   validateUserIsInGroup,
+  validatePrivateMessageOwnership,
+  validatePrivateMessageId,
+  validateGroupMessageId,
+  validateGroupMessageOwnership,
 } = require("./input-validations");
 const messagesDB = require("../db/messages");
 const groupDB = require("../db/group");
@@ -148,6 +152,38 @@ const getGroupChat = [
   },
 ];
 
+const deletePrivateMessage = [
+  authenticate,
+  validatePrivateMessageId(),
+  validatePrivateMessageOwnership(),
+  checkValidations,
+  async function (req, res) {
+    const result = await messagesDB.deletePrivateMessage(req.locals.message.id);
+
+    if (result) {
+      return res.status(200).json({ success: true });
+    } else {
+      return res.status(500).json({ errors: ["Error deleting message"] });
+    }
+  },
+];
+
+const deleteGroupMessage = [
+  authenticate,
+  validateGroupMessageId(),
+  validateGroupMessageOwnership(),
+  checkValidations,
+  async function (req, res) {
+    const result = await messagesDB.deleteGroupMessage(req.locals.message.id);
+
+    if (result) {
+      return res.status(200).json({ success: true });
+    } else {
+      return res.status(500).json({ errors: ["Error deleting message"] });
+    }
+  },
+];
+
 const getPrivateChats = [
   authenticate,
   async function (req, res) {
@@ -171,4 +207,6 @@ module.exports = {
   getPrivateChat,
   getGroupChat,
   getPrivateChats,
+  deletePrivateMessage,
+  deleteGroupMessage,
 };

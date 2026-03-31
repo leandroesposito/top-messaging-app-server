@@ -109,6 +109,46 @@ async function updatePrivateChatLastSeen(uid1, uid2, lastSeen) {
   await runQuery(query, params);
 }
 
+async function deletePrivateMessage(id) {
+  const query = `
+    DELETE from private_messages WHERE id = $1
+  `;
+  const params = [id];
+
+  await runQuery(query, params);
+  return true;
+}
+
+async function checkPrivateMessageExist(id) {
+  const query = `
+    SELECT id, sender_user_id from private_messages where id = $1;
+  `;
+  const params = [id];
+
+  const res = await runQuery(query, params);
+  return res[0];
+}
+
+async function deleteGroupMessage(id) {
+  const query = `
+    DELETE from group_messages WHERE id = $1
+  `;
+  const params = [id];
+
+  await runQuery(query, params);
+  return true;
+}
+
+async function checkGroupMessageExist(id) {
+  const query = `
+    SELECT id, sender_user_id from group_messages where id = $1;
+  `;
+  const params = [id];
+
+  const res = await runQuery(query, params);
+  return res[0];
+}
+
 async function checkMessagePermission(sender_user_id, receiver_user_id) {
   if (sender_user_id === receiver_user_id) {
     return { friends: true };
@@ -159,5 +199,9 @@ module.exports = {
   getGroupChat,
   getPrivateChats,
   updatePrivateChatLastSeen,
+  deletePrivateMessage,
+  checkPrivateMessageExist,
+  deleteGroupMessage,
+  checkGroupMessageExist,
   checkMessagePermission,
 };

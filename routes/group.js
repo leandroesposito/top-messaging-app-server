@@ -5,6 +5,10 @@ const messagesController = require("../controllers/messages");
 const groupRouter = Router();
 
 groupRouter.post("/join/:inviteCode", groupController.joinGroup);
+groupRouter.delete(
+  "/messages/:messageId",
+  messagesController.deleteGroupMessage,
+);
 groupRouter.delete("/:groupId/leave", groupController.leaveGroup);
 groupRouter.delete("/:groupId/members/:userId", groupController.banUser);
 groupRouter.get("/:groupId/members", groupController.getMembers);

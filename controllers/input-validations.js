@@ -2,6 +2,7 @@ const { validationResult, param, body } = require("express-validator");
 const userDB = require("../db/user");
 const groupDB = require("../db/group");
 const friendsDB = require("../db/friends");
+const messageDB = require("../db/messages");
 const NotFoundError = require("../errors/NotFoundError");
 
 function checkValidations(req, res, next) {
@@ -181,6 +182,70 @@ function validateMessage() {
     .withMessage("body can't be empty and max length is 2000 characters");
 }
 
+function validatePrivateMessageId() {
+  return param("messageId").custom(async (value, { req }) => {
+    const message = await messageDB.checkPrivateMessageExist(value);
+    if (!message) {
+      throw new NotFoundError("Message not found");
+    }
+
+    req.locals = {
+      message: {
+        id: message.id,
+        senderUserId: message.sender_user_id,
+      },
+    };
+
+    return true;
+  });
+}
+
+function validatePrivateMessageOwnership() {
+  return param("messageId").custom((value, { req }) => {
+    if (!req.user || !req.locals || !req.locals.message) {
+      return false;
+    }
+
+    if (req.locals.message.senderUserId !== req.user.id) {
+      throw new NotFoundError("Message not found");
+    }
+
+    return true;
+  });
+}
+
+function validateGroupMessageId() {
+  return param("messageId").custom(async (value, { req }) => {
+    const message = await messageDB.checkGroupMessageExist(value);
+    if (!message) {
+      throw new NotFoundError("Message not found");
+    }
+
+    req.locals = {
+      message: {
+        id: message.id,
+        senderUserId: message.sender_user_id,
+      },
+    };
+
+    return true;
+  });
+}
+
+function validateGroupMessageOwnership() {
+  return param("messageId").custom((value, { req }) => {
+    if (!req.user || !req.locals || !req.locals.message) {
+      return false;
+    }
+
+    if (req.locals.message.senderUserId !== req.user.id) {
+      throw new NotFoundError("Message not found");
+    }
+
+    return true;
+  });
+}
+
 module.exports = {
   checkValidations,
   validateUserId,
@@ -195,4 +260,8 @@ module.exports = {
   validateUserIsInGroup,
   validateUserIsMember,
   validateMessage,
+  validatePrivateMessageId,
+  validatePrivateMessageOwnership,
+  validateGroupMessageId,
+  validateGroupMessageOwnership,
 };
