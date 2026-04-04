@@ -1,7 +1,7 @@
-const { signUpRouter } = require("./sign-up");
+const { signUpRouter } = require("../routes/sign-up");
 const request = require("supertest");
 const express = require("express");
-const { initDatabase, endPool } = require("./test-helpers");
+const { initDatabase, endPool } = require("../routes/test-helpers");
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));

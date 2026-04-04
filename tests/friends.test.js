@@ -1,13 +1,13 @@
-const { signUpRouter } = require("./sign-up");
-const { logInRouter } = require("./log-in");
-const { friendsRouter } = require("./friends");
+const { signUpRouter } = require("../routes/sign-up");
+const { logInRouter } = require("../routes/log-in");
+const { friendsRouter } = require("../routes/friends");
 
 const passport = require("passport");
 const jwtStratety = require("../auth/jwt-strategy");
 
 const request = require("supertest");
 const express = require("express");
-const { initDatabase, endPool, delay } = require("./test-helpers");
+const { initDatabase, endPool, delay } = require("../routes/test-helpers");
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));

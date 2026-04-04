@@ -1,8 +1,8 @@
-const { logInRouter } = require("./log-in");
-const { signUpRouter } = require("./sign-up");
+const { logInRouter } = require("../routes/log-in");
+const { signUpRouter } = require("../routes/sign-up");
 const request = require("supertest");
 const express = require("express");
-const { initDatabase, endPool } = require("./test-helpers");
+const { initDatabase, endPool } = require("../routes/test-helpers");
 const jwt = require("jsonwebtoken");
 const app = express();
 

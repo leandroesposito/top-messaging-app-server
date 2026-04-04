@@ -1,10 +1,10 @@
-const { signUpRouter } = require("./sign-up");
-const { logInRouter } = require("./log-in");
-const { refreshRouter } = require("./refresh");
+const { signUpRouter } = require("../routes/sign-up");
+const { logInRouter } = require("../routes/log-in");
+const { refreshRouter } = require("../routes/refresh");
 
 const request = require("supertest");
 const express = require("express");
-const { initDatabase, endPool, delay } = require("./test-helpers");
+const { initDatabase, endPool, delay } = require("../routes/test-helpers");
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
